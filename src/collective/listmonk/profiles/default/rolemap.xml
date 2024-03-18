@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rolemap>
+  <permissions>
+    <permission acquire="False"
+                name="collective.listmonk: Add Newsletter"
+    >
+      <role name="Manager" />
+      <role name="Site Administrator" />
+      <role name="Owner" />
+      <role name="Contributor" />
+    </permission>
+  </permissions>
+</rolemap>
