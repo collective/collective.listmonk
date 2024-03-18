@@ -121,8 +121,9 @@ Zope = [
   'Products.CMFCore', 'Products.CMFDynamicViewFTI',
 ]
 python-dateutil = ['dateutil']
-ignore-packages = ['plone.volto', 'zestreleaser.towncrier', 'zest.releaser', 'pytest', 'pytest-cov', 'pytest-plone']
-Plone = ['Products.CMFPlone', 'Products.CMFCore', 'Products.GenericSetup', 'Products.ZCatalog', 'z3c.form']
+ignore-packages = ['zestreleaser.towncrier', 'zest.releaser', 'pytest', 'pytest-cov', 'pytest-plone']
+'Products.CMFPlone' = ['plone.app.contenttypes', 'plone.dexterity', 'Products.GenericSetup']
+'plone.app.testing' = ['plone.testing']
 
 ##
 # Add extra configuration options in .meta.toml:

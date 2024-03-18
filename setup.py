@@ -47,7 +47,6 @@ setup(
     install_requires=[
         "setuptools",
         "Products.CMFPlone",
-        "plone.api",
         "plone.restapi",
     ],
     extras_require={
