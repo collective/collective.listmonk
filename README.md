@@ -82,6 +82,20 @@ Install all development dependencies -- including Plone -- and create a new inst
 make install
 ```
 
+### Start Listmonk
+
+```bash
+make start-listmonk
+```
+
+This runs Listmonk at http://localhost:9000 and Mailhog at http://localhost:8025
+
+### Start Plone
+
+```bash
+make start
+```
+
 ### Update translations
 
 ```bash
