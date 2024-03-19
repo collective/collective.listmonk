@@ -29,7 +29,7 @@ class ListmonkLayer(Layer):
         )
         # Poll Listmonk until it is up and running
         ping_url = "http://127.0.0.1:9000/"
-        for i in range(1, 10):
+        for i in range(1, 15):
             try:
                 result = urlopen(ping_url)
                 if result.code == 200:
@@ -38,8 +38,7 @@ class ListmonkLayer(Layer):
                 sleep(3)
                 sys.stdout.write(".")
         else:
-            self.tearDown()
-            sys.stdout.write("Listmonk stack could not be started !!!")
+            raise Exception("Listmonk stack could not be started !!!")
 
     def tearDown(self):
         self.proc = subprocess.call(
