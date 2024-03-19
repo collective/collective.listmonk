@@ -29,7 +29,7 @@ class ListmonkLayer(Layer):
         )
         # Poll Listmonk until it is up and running
         ping_url = "http://127.0.0.1:9000/"
-        for i in range(1, 15):
+        for i in range(1, 10):
             try:
                 result = urlopen(ping_url)
                 if result.code == 200:
