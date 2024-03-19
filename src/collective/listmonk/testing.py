@@ -5,13 +5,10 @@ from plone.app.testing import IntegrationTesting
 from plone.app.testing import PloneSandboxLayer
 from plone.testing.layer import Layer
 from plone.testing.zope import WSGI_SERVER_FIXTURE
-from time import sleep
-from urllib.request import urlopen
 
 import collective.listmonk
 import pathlib
 import subprocess
-import sys
 
 
 ROOT = pathlib.Path(__file__).parent.parent.parent.parent
@@ -22,23 +19,11 @@ class ListmonkLayer(Layer):
 
     def setUp(self):
         self.proc = subprocess.call(
-            "docker-compose -p listmonk_test -f docker-compose.yml up -d",
+            "docker-compose -p listmonk_test -f docker-compose.yml up --wait",
             shell=True,
             close_fds=True,
             cwd=ROOT,
         )
-        # Poll Listmonk until it is up and running
-        ping_url = "http://127.0.0.1:9000/"
-        for i in range(1, 15):
-            try:
-                result = urlopen(ping_url)
-                if result.code == 200:
-                    break
-            except Exception:
-                sleep(3)
-                sys.stdout.write(".")
-        else:
-            raise Exception("Listmonk stack could not be started !!!")
 
     def tearDown(self):
         self.proc = subprocess.call(

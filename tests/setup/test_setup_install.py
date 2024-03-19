@@ -20,7 +20,7 @@ class TestSetupInstall:
 
     def test_listmonk_version(self, functional):
         response = requests.get(
-            "http://127.0.0.1:9000/api/config", auth=("admin", "admin")
+            "http://localhost:9000/api/config", auth=("admin", "admin")
         )
         assert response.status_code == 200
         assert response.json()["data"]["version"] == "v3.0.0"
