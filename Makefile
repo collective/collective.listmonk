@@ -26,7 +26,7 @@ ifeq (, $(shell which $(PYTHON) ))
 endif
 
 # version ok?
-PYTHON_VERSION_MIN=3.8
+PYTHON_VERSION_MIN=3.11
 PYTHON_VERSION_OK=$(shell $(PYTHON) -c "import sys; print((int(sys.version_info[0]), int(sys.version_info[1])) >= tuple(map(int, '$(PYTHON_VERSION_MIN)'.split('.'))))")
 ifeq ($(PYTHON_VERSION_OK),0)
   $(error "Need python $(PYTHON_VERSION) >= $(PYTHON_VERSION_MIN)")
@@ -110,3 +110,7 @@ test: bin/tox ## run tests
 .PHONY: test-coverage
 test-coverage: bin/tox ## run tests with coverage
 	bin/tox -e coverage
+
+.PHONY: start-listmonk
+start-listmonk:
+	docker compose -p listmonk -f docker-compose.yml up

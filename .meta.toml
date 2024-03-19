@@ -30,7 +30,6 @@ ref = "1.0.0"
 jobs = [
     "qa",
     "test",
-    "coverage",
     "dependencies",
     "release_ready",
     ]
