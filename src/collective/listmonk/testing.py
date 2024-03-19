@@ -27,6 +27,12 @@ class ListmonkLayer(Layer):
 
     def tearDown(self):
         self.proc = subprocess.call(
+            "docker ps --all",
+            shell=True,
+            close_fds=True,
+            cwd=ROOT,
+        )
+        self.proc = subprocess.call(
             "docker compose -p listmonk_test -f docker-compose.yml down",
             shell=True,
             close_fds=True,
