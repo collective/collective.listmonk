@@ -19,7 +19,7 @@ class ListmonkLayer(Layer):
 
     def setUp(self):
         self.proc = subprocess.call(
-            "docker-compose -p listmonk_test -f docker-compose.yml up --wait",
+            "docker compose -p listmonk_test -f docker-compose.yml up --wait",
             shell=True,
             close_fds=True,
             cwd=ROOT,
@@ -27,7 +27,7 @@ class ListmonkLayer(Layer):
 
     def tearDown(self):
         self.proc = subprocess.call(
-            "docker-compose -p listmonk_test -f docker-compose.yml down",
+            "docker compose -p listmonk_test -f docker-compose.yml down",
             shell=True,
             close_fds=True,
             cwd=ROOT,

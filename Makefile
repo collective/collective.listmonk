@@ -113,4 +113,4 @@ test-coverage: bin/tox ## run tests with coverage
 
 .PHONY: start-listmonk
 start-listmonk:
-	docker-compose -p listmonk -f docker-compose.yml up
+	docker compose -p listmonk -f docker-compose.yml up
