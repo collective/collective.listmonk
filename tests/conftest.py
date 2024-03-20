@@ -1,6 +1,7 @@
 from collective.listmonk.testing import FUNCTIONAL_TESTING
 from collective.listmonk.testing import INTEGRATION_TESTING
 from pathlib import Path
+from plone import api
 from plone.app.testing import SITE_OWNER_NAME
 from plone.app.testing import SITE_OWNER_PASSWORD
 from plone.restapi.testing import RelativeSession
@@ -10,6 +11,7 @@ from pythongettext.msgfmt import PoSyntaxError
 from typing import Generator
 
 import pytest
+import transaction
 
 
 pytest_plugins = ["pytest_plone"]
@@ -46,24 +48,50 @@ def generate_mo():
 
 
 @pytest.fixture()
-def request_factory(portal):
-    def factory():
-        url = portal.absolute_url()
-        api_session = RelativeSession(url)
-        api_session.headers.update({"Accept": "application/json"})
-        return api_session
-
-    return factory
+def portal(functional):
+    return functional["portal"]
 
 
 @pytest.fixture()
-def anon_request(request_factory):
-    return request_factory()
+def newsletter(portal):
+    with api.env.adopt_roles(["Manager"]):
+        newsletter = api.content.create(
+            type="Newsletter",
+            container=portal,
+            title="Test Newsletter",
+            listmonk_id=1,
+        )
+        api.content.transition(newsletter, "publish")
+        transaction.commit()
+        return newsletter
+
+
+def make_api_session(portal):
+    url = portal.absolute_url()
+    api_session = RelativeSession(url)
+    api_session.headers.update({"Accept": "application/json"})
+    return api_session
 
 
 @pytest.fixture()
-def manager_request(request_factory):
-    request = request_factory()
-    request.auth = (SITE_OWNER_NAME, SITE_OWNER_PASSWORD)
-    yield request
-    request.auth = ()
+def anon_plone_client(portal):
+    return make_api_session(portal)
+
+
+@pytest.fixture()
+def manager_plone_client(portal):
+    api_session = make_api_session(portal)
+    api_session.auth = (SITE_OWNER_NAME, SITE_OWNER_PASSWORD)
+    return api_session
+
+
+@pytest.fixture()
+def listmonk_client():
+    session = RelativeSession("http://localhost:9000/api")
+    session.auth = ("admin", "admin")
+    return session
+
+
+@pytest.fixture()
+def mailhog_client():
+    return RelativeSession("http://localhost:8025/api/v1")

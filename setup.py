@@ -1,4 +1,5 @@
 """Setuptools configuration for the collective.listmonk package."""
+
 from pathlib import Path
 from setuptools import find_packages
 from setuptools import setup
@@ -53,6 +54,7 @@ setup(
         "test": [
             "zest.releaser[recommended]",
             "zestreleaser.towncrier",
+            "plone.api",
             "plone.app.testing",
             "plone.restapi[test]",
             "plone.volto",

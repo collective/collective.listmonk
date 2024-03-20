@@ -3,8 +3,11 @@ from plone.app.testing import applyProfile
 from plone.app.testing import FunctionalTesting
 from plone.app.testing import IntegrationTesting
 from plone.app.testing import PloneSandboxLayer
+from plone.base.interfaces.controlpanel import IMailSchema
+from plone.registry.interfaces import IRegistry
 from plone.testing.layer import Layer
 from plone.testing.zope import WSGI_SERVER_FIXTURE
+from zope.component import getUtility
 
 import collective.listmonk
 import pathlib
@@ -54,6 +57,11 @@ class Layer(PloneSandboxLayer):
     def setUpPloneSite(self, portal):
         applyProfile(portal, "plone.volto:default")
         applyProfile(portal, "collective.listmonk:default")
+
+        registry = getUtility(IRegistry)
+        mail_settings = registry.forInterface(IMailSchema, prefix="plone")
+        mail_settings.smtp_host = "localhost"
+        mail_settings.smtp_port = 1025
 
 
 FIXTURE = Layer()
