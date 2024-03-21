@@ -6,7 +6,7 @@
   <plone:service
       method="POST"
       factory=".subscriptions.SubscriptionsPost"
-      for="..content.newsletter.INewsletter"
+      for="*"
       permission="zope2.View"
       name="@subscriptions"
       />

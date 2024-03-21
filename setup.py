@@ -49,6 +49,7 @@ setup(
         "setuptools",
         "Products.CMFPlone",
         "plone.restapi",
+        "pydantic",
     ],
     extras_require={
         "test": [

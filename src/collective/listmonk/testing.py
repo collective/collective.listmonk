@@ -60,6 +60,8 @@ class Layer(PloneSandboxLayer):
 
         registry = getUtility(IRegistry)
         mail_settings = registry.forInterface(IMailSchema, prefix="plone")
+        mail_settings.email_from_name = "Test Plone"
+        mail_settings.email_from_address = "testplone@example.com"
         mail_settings.smtp_host = "localhost"
         mail_settings.smtp_port = 1025
 
