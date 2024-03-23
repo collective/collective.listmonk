@@ -12,6 +12,7 @@ from typing import Optional
 from zExceptions import BadRequest
 from zope.component import getUtility
 
+import json
 import pydantic
 import uuid
 
@@ -35,8 +36,15 @@ class SubscriptionsPost(Service):
     def reply(self):
         try:
             data = SubscriptionRequest.model_validate_json(self.request.get("BODY"))
-        except pydantic.ValidationError as e:
-            raise BadRequest(str(e))
+        except pydantic.ValidationError as exc:
+            raise BadRequest(
+                json.dumps(
+                    [
+                        {"message": error["msg"], "field": error["loc"][-1]}
+                        for error in exc.errors()
+                    ]
+                )
+            )
 
         subscriber = get_subscriber(data.email)
         if subscriber:

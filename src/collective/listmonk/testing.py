@@ -10,11 +10,7 @@ from plone.testing.zope import WSGI_SERVER_FIXTURE
 from zope.component import getUtility
 
 import collective.listmonk
-import pathlib
 import subprocess
-
-
-ROOT = pathlib.Path(__file__).parent.parent.parent.parent
 
 
 class ListmonkLayer(Layer):
@@ -25,7 +21,6 @@ class ListmonkLayer(Layer):
             "docker compose -p listmonk_test -f docker-compose.yml up --wait",
             shell=True,
             close_fds=True,
-            cwd=ROOT,
         )
 
     def tearDown(self):
@@ -33,7 +28,6 @@ class ListmonkLayer(Layer):
             "docker compose -p listmonk_test -f docker-compose.yml down",
             shell=True,
             close_fds=True,
-            cwd=ROOT,
         )
 
 
