@@ -9,6 +9,8 @@ from plone.registry.interfaces import IRegistry
 from plone.restapi.services import Service
 from plone.restapi.testing import RelativeSession
 from typing import Optional
+from typing import TypeVar
+from urllib.parse import quote
 from zExceptions import BadRequest
 from zope.component import getUtility
 
@@ -23,7 +25,7 @@ class SubscriptionRequest(pydantic.BaseModel):
     email: str
 
 
-class ConfirmationToken(pydantic.BaseModel):
+class PendingConfirmation(pydantic.BaseModel):
     token: str
     list_ids: list[int]
     sub_id: int
@@ -32,10 +34,13 @@ class ConfirmationToken(pydantic.BaseModel):
     )
 
 
-class SubscriptionsPost(Service):
-    def reply(self):
+T = TypeVar("T", bound=pydantic.BaseModel)
+
+
+class PydanticService(Service):
+    def validate(self, model: type[T]) -> T:
         try:
-            data = SubscriptionRequest.model_validate_json(self.request.get("BODY"))
+            return model.model_validate_json(self.request.get("BODY"))
         except pydantic.ValidationError as exc:
             raise BadRequest(
                 json.dumps(
@@ -45,6 +50,11 @@ class SubscriptionsPost(Service):
                     ]
                 )
             )
+
+
+class CreateSubscription(PydanticService):
+    def reply(self):
+        data = self.validate(SubscriptionRequest)
 
         subscriber = get_subscriber(data.email)
         if subscriber:
@@ -73,12 +83,37 @@ class SubscriptionsPost(Service):
             )
             subscriber = result["data"]
 
-        token = create_confirmation_token(subscriber["id"], data)
+        pc = create_pending_confirmation(subscriber["id"], data)
         navroot = api.portal.get_navigation_root(self.context)
         confirm_link = (
-            f"{navroot.absolute_url()}/subscriptions/confirm?token={token.token}"
+            f"{navroot.absolute_url()}/subscriptions/confirm?token={quote(pc.token)}"
         )
         send_confirmation(data, confirm_link)
+
+
+class ConfirmSubscriptionRequest(pydantic.BaseModel):
+    token: str
+
+
+class ConfirmSubscription(PydanticService):
+    def reply(self):
+        data = self.validate(ConfirmSubscriptionRequest)
+        storage = get_pending_confirmation_storage()
+        try:
+            pc = PendingConfirmation.model_validate(storage[data.token])
+        except KeyError:
+            raise BadRequest("Invalid token.")
+        call_listmonk(
+            "put",
+            "/subscribers/lists",
+            json={
+                "ids": [pc.sub_id],
+                "action": "add",
+                "target_list_ids": pc.list_ids,
+                "status": "confirmed",
+            },
+        )
+        del storage[data.token]
 
 
 # TODO get real values from configuration
@@ -106,23 +141,22 @@ def get_subscriber(email: str) -> Optional[dict]:
         raise BadRequest("Found more than one subscriber")
 
 
-def get_confirmation_token_storage():
-    """Get or create the BTree used to track confirmation tokens."""
+def get_pending_confirmation_storage() -> OOBTree:
+    """Get or create the BTree used to track pending confirmations."""
     portal = api.portal.get()
-    if not hasattr(portal, "_listmonk_confirmation_tokens"):
-        portal._listmonk_confirmation_tokens = OOBTree()
-    return portal._listmonk_confirmation_tokens
+    if not hasattr(portal, "_listmonk_pending_confirmations"):
+        portal._listmonk_pending_confirmations = OOBTree()
+    return portal._listmonk_pending_confirmations
 
 
-def create_confirmation_token(
+def create_pending_confirmation(
     sub_id: int, data: SubscriptionRequest
-) -> ConfirmationToken:
-    storage = get_confirmation_token_storage()
-    token = ConfirmationToken(
-        token=uuid.uuid4().hex, sub_id=sub_id, list_ids=data.list_ids
-    )
-    storage[sub_id] = token.model_dump()
-    return token
+) -> PendingConfirmation:
+    storage = get_pending_confirmation_storage()
+    token = uuid.uuid4().hex
+    pc = PendingConfirmation(token=token, sub_id=sub_id, list_ids=data.list_ids)
+    storage[token] = pc.model_dump()
+    return pc
 
 
 def send_confirmation(data: SubscriptionRequest, confirm_link: str):

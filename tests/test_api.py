@@ -1,23 +1,28 @@
 from collective.listmonk.services.subscriptions import get_subscriber
+from urllib.parse import unquote
 
 import email
 import json
 import pytest
+import re
 
 
 class TestSubscriptionsService:
+    # Note: These tests are not independent and must run in order.
+
     list_id = 1
 
     @pytest.fixture(autouse=True)
     def load_functional_layer(self, functional):
         pass
 
-    def test_create_subscription(
-        self, portal, anon_plone_client, mailhog_client, listmonk_client
-    ):
-        subscriptions_url = f"{portal.absolute_url()}/@subscriptions"
+    @pytest.fixture()
+    def url(self, portal):
+        return f"{portal.absolute_url()}/@subscriptions"
+
+    def test_create_subscription(self, url, anon_plone_client, mailhog_client):
         response = anon_plone_client.post(
-            subscriptions_url,
+            url,
             json={
                 "name": "Jean-Luc Picard",
                 "email": "subscriber@example.com",
@@ -34,8 +39,6 @@ class TestSubscriptionsService:
             messages[0]["Raw"]["Data"], policy=email.policy.default
         )
         assert msg["To"] == "subscriber@example.com"
-        # body = msg.get_content()
-        # TODO parse token
 
         # Assert unconfirmed subscription was created in listmonk
         subscriber = get_subscriber("subscriber@example.com")
@@ -44,11 +47,10 @@ class TestSubscriptionsService:
         ][0]
         assert subscription["subscription_status"] == "unconfirmed"
 
-    def test_create_subscription_again(self, portal, anon_plone_client, mailhog_client):
+    def test_create_subscription_again(self, url, anon_plone_client, mailhog_client):
         # Trying to create it a second time re-sends the confirmation.
-        subscriptions_url = f"{portal.absolute_url()}/@subscriptions"
         response = anon_plone_client.post(
-            subscriptions_url,
+            url,
             json={
                 "name": "Jean-Luc Picard",
                 "email": "subscriber@example.com",
@@ -61,19 +63,38 @@ class TestSubscriptionsService:
         resp = mailhog_client.get("/messages")
         messages = resp.json()
         assert len(messages) == 2
+        msg = email.message_from_string(
+            messages[0]["Raw"]["Data"], policy=email.policy.default
+        )
+        body = msg.get_content()
+        token = unquote(re.search(r"token=(\S+)", body).group(1))
 
-    def test_create_subscription__bad_request(self, portal, anon_plone_client):
-        subscriptions_url = f"{portal.absolute_url()}/@subscriptions"
+        # Confirm the subscription
+        response = anon_plone_client.put(url, json={"token": token})
+        assert response.status_code == 200
+
+        # Confirm status was updated in listmonk
+        subscriber = get_subscriber("subscriber@example.com")
+        subscription = [
+            lst for lst in subscriber["lists"] if lst["id"] == self.list_id
+        ][0]
+        assert subscription["subscription_status"] == "confirmed"
+
+    def test_create_subscription__bad_request(self, url, anon_plone_client):
         response = anon_plone_client.post(
-            subscriptions_url,
+            url,
             json={},
         )
         assert response.status_code == 400
         # Make sure it's in the format that volto expects
         assert json.loads(response.json()["message"])[0]["message"] == "Field required"
 
-    def test_confirm_subscription(self, newsletter, anon_plone_client):
-        pass
+    def test_confirm_subscription__bad_token(self, url, anon_plone_client):
+        response = anon_plone_client.put(
+            url,
+            json={"token": "BOGUS"},
+        )
+        assert response.status_code == 400
 
     def test_unsubscribe(self, newsletter, anon_plone_client):
         pass

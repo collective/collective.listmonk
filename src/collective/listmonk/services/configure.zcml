@@ -5,7 +5,15 @@
 
   <plone:service
       method="POST"
-      factory=".subscriptions.SubscriptionsPost"
+      factory=".subscriptions.CreateSubscription"
+      for="*"
+      permission="zope2.View"
+      name="@subscriptions"
+      />
+
+  <plone:service
+      method="PUT"
+      factory=".subscriptions.ConfirmSubscription"
       for="*"
       permission="zope2.View"
       name="@subscriptions"
