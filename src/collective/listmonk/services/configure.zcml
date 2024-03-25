@@ -19,4 +19,12 @@
       name="@subscriptions"
       />
 
+  <plone:service
+      method="DELETE"
+      factory=".subscriptions.Unsubscribe"
+      for="*"
+      permission="zope2.View"
+      name="@subscriptions"
+      />
+
 </configure>

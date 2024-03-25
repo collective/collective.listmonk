@@ -116,6 +116,28 @@ class ConfirmSubscription(PydanticService):
         del storage[data.token]
 
 
+class UnsubscribeRequest(pydantic.BaseModel):
+    list_ids: list[int]
+    email: str
+
+
+class Unsubscribe(PydanticService):
+    def reply(self):
+        data = self.validate(UnsubscribeRequest)
+        subscriber = get_subscriber(data.email)
+        if subscriber is None:
+            raise BadRequest("Subscription not found")
+        call_listmonk(
+            "put",
+            "/subscribers/lists",
+            json={
+                "ids": [subscriber["id"]],
+                "action": "unsubscribe",
+                "target_list_ids": data.list_ids,
+            },
+        )
+
+
 # TODO get real values from configuration
 listmonk = RelativeSession("http://localhost:9000/api")
 listmonk.auth = ("admin", "admin")

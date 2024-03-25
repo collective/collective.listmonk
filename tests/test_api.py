@@ -96,5 +96,28 @@ class TestSubscriptionsService:
         )
         assert response.status_code == 400
 
-    def test_unsubscribe(self, newsletter, anon_plone_client):
-        pass
+    def test_unsubscribe(self, url, anon_plone_client):
+        response = anon_plone_client.delete(
+            url,
+            json={
+                "email": "subscriber@example.com",
+                "list_ids": [self.list_id],
+            },
+        )
+        assert response.status_code == 200
+
+        subscriber = get_subscriber("subscriber@example.com")
+        subscription = [
+            lst for lst in subscriber["lists"] if lst["id"] == self.list_id
+        ][0]
+        assert subscription["subscription_status"] == "unsubscribed"
+
+    def test_unsubscribe__unknown_email(self, url, anon_plone_client):
+        response = anon_plone_client.delete(
+            url,
+            json={
+                "email": "bogus@example.com",
+                "list_ids": [self.list_id],
+            },
+        )
+        assert response.status_code == 400
