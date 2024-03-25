@@ -48,6 +48,7 @@ setup(
     install_requires=[
         "setuptools",
         "Products.CMFPlone",
+        "plone.api",
         "plone.restapi",
         "pydantic",
     ],
@@ -55,7 +56,6 @@ setup(
         "test": [
             "zest.releaser[recommended]",
             "zestreleaser.towncrier",
-            "plone.api",
             "plone.app.testing",
             "plone.restapi[test]",
             "plone.volto",
