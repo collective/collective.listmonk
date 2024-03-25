@@ -1,4 +1,4 @@
-from collective.listmonk.services.subscriptions import get_subscriber
+from collective.listmonk import listmonk
 from urllib.parse import unquote
 
 import email
@@ -41,7 +41,7 @@ class TestSubscriptionsService:
         assert msg["To"] == "subscriber@example.com"
 
         # Assert unconfirmed subscription was created in listmonk
-        subscriber = get_subscriber("subscriber@example.com")
+        subscriber = listmonk.get_subscriber("subscriber@example.com")
         subscription = [
             lst for lst in subscriber["lists"] if lst["id"] == self.list_id
         ][0]
@@ -74,7 +74,7 @@ class TestSubscriptionsService:
         assert response.status_code == 200
 
         # Confirm status was updated in listmonk
-        subscriber = get_subscriber("subscriber@example.com")
+        subscriber = listmonk.get_subscriber("subscriber@example.com")
         subscription = [
             lst for lst in subscriber["lists"] if lst["id"] == self.list_id
         ][0]
@@ -106,7 +106,7 @@ class TestSubscriptionsService:
         )
         assert response.status_code == 200
 
-        subscriber = get_subscriber("subscriber@example.com")
+        subscriber = listmonk.get_subscriber("subscriber@example.com")
         subscription = [
             lst for lst in subscriber["lists"] if lst["id"] == self.list_id
         ][0]

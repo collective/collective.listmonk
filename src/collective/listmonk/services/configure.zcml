@@ -27,4 +27,12 @@
       name="@subscriptions"
       />
 
+  <plone:service
+      method="POST"
+      factory=".mailings.SendMailing"
+      for="..content.newsletter.INewsletter"
+      permission="collective.listmonk.newsletter.send"
+      name="@mailings"
+      />
+
 </configure>

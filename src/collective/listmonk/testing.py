@@ -1,3 +1,4 @@
+from collective.listmonk import listmonk
 from plone.app.contenttypes.testing import PLONE_APP_CONTENTTYPES_FIXTURE
 from plone.app.testing import applyProfile
 from plone.app.testing import FunctionalTesting
@@ -22,6 +23,19 @@ class ListmonkLayer(Layer):
             shell=True,
             close_fds=True,
         )
+        settings = listmonk.call_listmonk("get", "/settings")["data"]
+        smtp = settings["smtp"][0]
+        smtp.update(
+            {
+                "enabled": True,
+                "host": "mailhog",
+                "port": 1025,
+                "auth_protocol": "none",
+                "tls_type": "none",
+            }
+        )
+        settings.update({"smtp": [smtp]})
+        listmonk.call_listmonk("put", "/settings", json=settings)
 
     def tearDown(self):
         subprocess.call(
