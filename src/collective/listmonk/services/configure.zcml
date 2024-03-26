@@ -6,7 +6,7 @@
   <plone:service
       method="POST"
       factory=".subscriptions.CreateSubscription"
-      for="*"
+      for="Products.CMFCore.interfaces.ISiteRoot"
       permission="zope2.View"
       name="@subscriptions"
       />
@@ -14,7 +14,7 @@
   <plone:service
       method="PUT"
       factory=".subscriptions.ConfirmSubscription"
-      for="*"
+      for="Products.CMFCore.interfaces.ISiteRoot"
       permission="zope2.View"
       name="@subscriptions"
       />
@@ -22,7 +22,7 @@
   <plone:service
       method="DELETE"
       factory=".subscriptions.Unsubscribe"
-      for="*"
+      for="Products.CMFCore.interfaces.ISiteRoot"
       permission="zope2.View"
       name="@subscriptions"
       />

@@ -1,18 +1,13 @@
 from BTrees.OOBTree import OOBTree
 from datetime import datetime
 from datetime import timezone
-from email.message import EmailMessage
-from email.utils import formataddr
 from plone import api
-from plone.base.interfaces.controlpanel import IMailSchema
-from plone.registry.interfaces import IRegistry
 from plone.restapi.services import Service
 from plone.restapi.testing import RelativeSession
 from typing import Optional
 from typing import TypeVar
 from urllib.parse import quote
 from zExceptions import BadRequest
-from zope.component import getUtility
 
 import json
 import pydantic
@@ -182,7 +177,6 @@ def create_pending_confirmation(
 
 
 def send_confirmation(data: SubscriptionRequest, confirm_link: str):
-    mailhost = api.portal.get_tool("MailHost")
     # lang = api.portal.get_current_language()
     # TODO show list titles instead of ids
     # TODO DE translation
@@ -196,21 +190,9 @@ To confirm this subscription, click this link:
 
 If you did not request this subscription, you can ignore this email.
 """
-    message = EmailMessage()
-    message.set_content(body)
-    mail_settings = get_mail_settings()
-    from_name = mail_settings.email_from_name
-    from_email = mail_settings.email_from_address
-    mailhost.send(
-        message.as_bytes(),
-        data.email,
-        formataddr((from_name, from_email)),
+    api.portal.send_email(
+        recipient=data.email,
         subject=subject,
-        charset="utf-8",
+        body=body,
         immediate=True,
     )
-
-
-def get_mail_settings():
-    registry = getUtility(IRegistry)
-    return registry.forInterface(IMailSchema, prefix="plone")
