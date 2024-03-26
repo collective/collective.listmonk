@@ -25,7 +25,7 @@
   <property name="global_allow">True</property>
 
   <!-- Schema, class and security -->
-  <property name="add_permission">collective.listmonk.newletter.add</property>
+  <property name="add_permission">collective.listmonk.newsletter.add</property>
   <property name="klass">collective.listmonk.content.newsletter.Newsletter</property>
   <property name="model_file" />
   <property name="model_source" />

@@ -122,7 +122,7 @@ Zope = [
 ]
 python-dateutil = ['dateutil']
 ignore-packages = ['zestreleaser.towncrier', 'zest.releaser', 'pytest', 'pytest-cov', 'pytest-plone']
-'Products.CMFPlone' = ['plone.app.contenttypes', 'plone.dexterity', 'Products.GenericSetup']
+'Products.CMFPlone' = ['plone.app.contenttypes', 'plone.base', 'plone.dexterity', 'plone.registry', 'plone.supermodel', 'Products.GenericSetup']
 'plone.app.testing' = ['plone.testing']
 
 ##

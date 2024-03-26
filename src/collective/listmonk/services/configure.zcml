@@ -1,3 +1,30 @@
-<configure xmlns="http://namespaces.zope.org/zope">
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    >
+
+  <plone:service
+      method="POST"
+      factory=".subscriptions.CreateSubscription"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      permission="zope2.View"
+      name="@subscriptions"
+      />
+
+  <plone:service
+      method="PUT"
+      factory=".subscriptions.ConfirmSubscription"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      permission="zope2.View"
+      name="@subscriptions"
+      />
+
+  <plone:service
+      method="DELETE"
+      factory=".subscriptions.Unsubscribe"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      permission="zope2.View"
+      name="@subscriptions"
+      />
 
 </configure>

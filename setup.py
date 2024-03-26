@@ -1,4 +1,5 @@
 """Setuptools configuration for the collective.listmonk package."""
+
 from pathlib import Path
 from setuptools import find_packages
 from setuptools import setup
@@ -47,7 +48,9 @@ setup(
     install_requires=[
         "setuptools",
         "Products.CMFPlone",
+        "plone.api",
         "plone.restapi",
+        "pydantic",
     ],
     extras_require={
         "test": [
