@@ -23,6 +23,8 @@ class ListmonkLayer(Layer):
             shell=True,
             close_fds=True,
         )
+
+        # Configure SMTP server; disable unsubscribe headers
         settings = listmonk.call_listmonk("get", "/settings")["data"]
         smtp = settings["smtp"][0]
         smtp.update(
@@ -34,8 +36,19 @@ class ListmonkLayer(Layer):
                 "tls_type": "none",
             }
         )
-        settings.update({"smtp": [smtp]})
+        settings.update({"smtp": [smtp], "privacy.unsubscribe_header": False})
         listmonk.call_listmonk("put", "/settings", json=settings)
+
+        # Configure template
+        listmonk.call_listmonk(
+            "put",
+            "/templates/1",
+            json={
+                "name": "Default campaign template",
+                "type": "campaign",
+                "body": '{{ template "content" . }}',
+            },
+        )
 
     def tearDown(self):
         subprocess.call(

@@ -29,7 +29,11 @@ class TestMailingsService:
         msg = email.message_from_string(
             messages[1]["Raw"]["Data"], policy=email.policy.default
         )
-        breakpoint()
+        assert msg["To"] == "john@example.com"
+        assert msg["Subject"] == "Test mailing"
+        assert msg["Content-Type"] == 'text/plain; charset="UTF-8"'
+        assert msg.get_content() == "This is a test of the emergency broadcast system."
+        assert "List-Unsubscribe" not in msg
 
     def test_send_mailing_test(self):
         pass
