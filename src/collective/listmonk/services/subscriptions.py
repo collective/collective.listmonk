@@ -28,7 +28,7 @@ class PendingConfirmation(pydantic.BaseModel):
 
 class CreateSubscription(PydanticService):
     def reply(self):
-        data = self.validate(SubscriptionRequest)
+        data = self.validate_body(SubscriptionRequest)
 
         subscriber = listmonk.get_subscriber(data.email)
         if subscriber:
@@ -71,7 +71,7 @@ class ConfirmSubscriptionRequest(pydantic.BaseModel):
 
 class ConfirmSubscription(PydanticService):
     def reply(self):
-        data = self.validate(ConfirmSubscriptionRequest)
+        data = self.validate_body(ConfirmSubscriptionRequest)
         storage = get_pending_confirmation_storage()
         try:
             pc = PendingConfirmation.model_validate(storage[data.token])
@@ -97,7 +97,7 @@ class UnsubscribeRequest(pydantic.BaseModel):
 
 class Unsubscribe(PydanticService):
     def reply(self):
-        data = self.validate(UnsubscribeRequest)
+        data = self.validate_body(UnsubscribeRequest)
         subscriber = listmonk.get_subscriber(data.email)
         if subscriber is None:
             raise BadRequest("Subscription not found")

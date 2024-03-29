@@ -3,7 +3,7 @@ import pytest
 import time
 
 
-class TestMailingsService:
+class TestNewsletterMailingsService:
     list_id = 1
 
     @pytest.fixture(autouse=True)
@@ -11,18 +11,22 @@ class TestMailingsService:
         pass
 
     @pytest.fixture()
-    def url(self, newsletter):
-        return f"{newsletter.absolute_url()}/@mailings"
+    def url(self, portal):
+        return f"{portal.absolute_url()}/@mailings"
 
-    def test_send_mailing(self, url, manager_plone_client, mailhog_client):
+    def _send_mailing(self, url, newsletter, manager_plone_client):
         response = manager_plone_client.post(
             url,
             json={
                 "subject": "Test mailing",
                 "body": "This is a test of the emergency broadcast system.",
+                "lists": [newsletter.absolute_url()],
             },
         )
         assert response.status_code == 200
+
+    def test_send_mailing(self, url, newsletter, manager_plone_client, mailhog_client):
+        self._send_mailing(url, newsletter, manager_plone_client)
 
         # Assert email was sent
         messages = poll_for_mail(mailhog_client, 2)
@@ -37,6 +41,45 @@ class TestMailingsService:
 
     def test_send_mailing_test(self):
         pass
+
+    def test_get_mailings_for_newsletter(
+        self, url, portal, newsletter, manager_plone_client
+    ):
+        self._send_mailing(url, newsletter, manager_plone_client)
+
+        response = manager_plone_client.get(
+            url,
+            params={"list": newsletter.absolute_url()},
+        )
+        assert response.status_code == 200
+        result = response.json()
+        assert result["items_total"] == 1
+        item = result["items"][0]
+        assert item["lists"][0]["@id"] == newsletter.absolute_url()
+        assert item["lists"][0]["title"] == newsletter.title
+        assert item["context"]["@id"] == portal.absolute_url()
+        assert item["sent_by"] == "admin"
+        assert item["subject"] == "Test mailing"
+        assert "sent_at" in item
+
+    def test_get_mailings_for_source_content(
+        self, url, portal, newsletter, manager_plone_client
+    ):
+        self._send_mailing(url, newsletter, manager_plone_client)
+
+        response = manager_plone_client.get(
+            url, params={"context": portal.absolute_url()}
+        )
+        assert response.status_code == 200
+        result = response.json()
+        assert result["items_total"] == 1
+        item = result["items"][0]
+        assert item["lists"][0]["@id"] == newsletter.absolute_url()
+        assert item["lists"][0]["title"] == newsletter.title
+        assert item["context"]["@id"] == portal.absolute_url()
+        assert item["sent_by"] == "admin"
+        assert item["subject"] == "Test mailing"
+        assert "sent_at" in item
 
 
 def poll_for_mail(mailhog_client, expected=1, retries=15):

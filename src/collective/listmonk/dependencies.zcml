@@ -2,5 +2,6 @@
 
   <!-- List all packages you depend here -->
   <include package="plone.restapi" />
+  <include package="souper.plone" />
 
 </configure>

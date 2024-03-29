@@ -30,9 +30,22 @@
   <plone:service
       method="POST"
       factory=".mailings.SendMailing"
-      for="..content.newsletter.INewsletter"
+      for="plone.dexterity.interfaces.IDexterityContent"
       permission="collective.listmonk.newsletter.send"
       name="@mailings"
+      />
+
+  <plone:service
+      method="GET"
+      factory=".mailings.ListMailings"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      permission="collective.listmonk.newsletter.send"
+      name="@mailings"
+      />
+
+  <utility
+      factory=".mailings.MailingCatalogFactory"
+      name="collective.listmonk.mailings"
       />
 
 </configure>
