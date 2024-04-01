@@ -1,17 +1,16 @@
-from annotated_types import Len
+from collective.listmonk import _
 from collective.listmonk import listmonk
+from collective.listmonk.content.newsletter import Newsletter
 from collective.listmonk.services.base import deserialize_obj_link
 from collective.listmonk.services.base import PydanticService
 from datetime import datetime
 from plone import api
 from plone.app.uuid.utils import uuidToCatalogBrain
-from plone.dexterity.content import DexterityContent
 from plone.restapi.batching import HypermediaBatch
 from plone.restapi.interfaces import ISerializeToJsonSummary
 from plone.restapi.serializer.converters import json_compatible
 from repoze.catalog.catalog import Catalog
 from repoze.catalog.indexes.field import CatalogFieldIndex
-from repoze.catalog.indexes.keyword import CatalogKeywordIndex
 from repoze.catalog.query import And
 from repoze.catalog.query import Eq
 from repoze.catalog.query import NotEq
@@ -19,10 +18,9 @@ from souper.interfaces import ICatalogFactory
 from souper.soup import get_soup
 from souper.soup import NodeAttributeIndexer
 from souper.soup import Record
-from typing import Annotated
 from typing import Optional
-from zExceptions import BadRequest
 from zope.component import getMultiAdapter
+from zope.i18n import translate
 from zope.interface import implementer
 from ZTUtils.Lazy import LazyMap
 
@@ -36,21 +34,21 @@ MAILINGS_SOUP = "collective.listmonk.mailings"
 class MailingRequest(pydantic.BaseModel):
     subject: str
     body: str
-    lists: Annotated[list[str], Len(min_length=1)]
+    list_ids: list[int]
+    based_on: Optional[str]
 
 
 class SendMailing(PydanticService):
-    context: DexterityContent
+    context: Newsletter
 
     def reply(self):
         data = self.validate_body(MailingRequest)
 
-        lists = []
-        for list_url in data.lists:
-            try:
-                lists.append(deserialize_obj_link(list_url))
-            except ValueError:
-                raise BadRequest(f"Invalid list URL: {list_url}")
+        if data.based_on:
+            based_on = deserialize_obj_link(data.based_on)
+
+        list_ids = list(set(data.list_ids).intersection(self.context.topics.values()))
+        topics = [k for k, v in self.context.topics.items() if v in list_ids]
 
         # Store mailing in Plone
         # (do this first so we only send the email once if there's a conflict error)
@@ -58,14 +56,31 @@ class SendMailing(PydanticService):
         record.attrs.update(
             {
                 "subject": data.subject,
-                "lists": [list.UID() for list in lists],
+                "newsletter": self.context.UID(),
+                "topics": topics,
                 "sent_at": datetime.now(),
                 "sent_by": api.user.get_current().getUserId(),
-                "context": self.context.UID(),
+                "based_on": based_on.UID() if based_on else None,
             }
         )
         get_soup(MAILINGS_SOUP, self.context).add(record)
         transaction.commit()
+
+        unsubscribe_path = translate(
+            _("path_unsubscribe", default="unsubscribe"), context=self.request
+        )
+        unsubscribe_link = f"{self.context.absolute_url()}/{unsubscribe_path}"
+        body = data.body + translate(
+            _(
+                "email_mailing_footer",
+                default="""
+
+Unsubscribe: ${unsubscribe_link}
+""",
+                mapping={"unsubscribe_link": unsubscribe_link},
+            ),
+            self.request,
+        )
 
         # Create campaign in listmonk
         result = listmonk.call_listmonk(
@@ -74,10 +89,10 @@ class SendMailing(PydanticService):
             json={
                 "name": data.subject,
                 "subject": data.subject,
-                "lists": [list.listmonk_id for list in lists],
+                "lists": list_ids,
                 "type": "regular",
                 "content_type": "plain",
-                "body": data.body,
+                "body": body,
             },
         )
         campaign = result["data"]
@@ -93,8 +108,8 @@ class SendMailing(PydanticService):
 
 
 class MailingsQuery(pydantic.BaseModel):
-    context: Optional[str] = None
-    list: Optional[str] = None
+    based_on: Optional[str] = None
+    newsletter: Optional[str] = None
 
 
 class ListMailings(PydanticService):
@@ -106,10 +121,12 @@ class ListMailings(PydanticService):
     def parse_query(self):
         params = self.validate_params(MailingsQuery)
         criteria = []
-        if params.context:
-            criteria.append(Eq("context", deserialize_obj_link(params.context).UID()))
-        if params.list:
-            criteria.append(Eq("lists", deserialize_obj_link(params.list).UID()))
+        if params.based_on:
+            criteria.append(Eq("based_on", deserialize_obj_link(params.based_on).UID()))
+        if params.newsletter:
+            criteria.append(
+                Eq("newsletter", deserialize_obj_link(params.newsletter).UID())
+            )
         if criteria:
             query = And(*criteria)
         else:
@@ -140,8 +157,10 @@ class ListMailings(PydanticService):
         results["items"] = items = []
         for record in batch:
             item = dict(record.attrs)
-            item["context"] = self.serialize_item(item["context"])
-            item["lists"] = [self.serialize_item(uid) for uid in item["lists"]]
+            item["based_on"] = (
+                self.serialize_item(item["based_on"]) if item["based_on"] else None
+            )
+            item["newsletter"] = self.serialize_item(item["newsletter"])
             items.append(json_compatible(item))
         return results
 
@@ -156,6 +175,6 @@ class MailingCatalogFactory:
     def __call__(self, context=None):
         catalog = Catalog()
         catalog["sent_at"] = CatalogFieldIndex(NodeAttributeIndexer("sent_at"))
-        catalog["context"] = CatalogFieldIndex(NodeAttributeIndexer("context"))
-        catalog["lists"] = CatalogKeywordIndex(NodeAttributeIndexer("lists"))
+        catalog["newsletter"] = CatalogFieldIndex(NodeAttributeIndexer("newsletter"))
+        catalog["based_on"] = CatalogFieldIndex(NodeAttributeIndexer("based_on"))
         return catalog

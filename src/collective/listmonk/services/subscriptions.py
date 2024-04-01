@@ -1,11 +1,14 @@
 from BTrees.OOBTree import OOBTree
+from collective.listmonk import _
 from collective.listmonk import listmonk
+from collective.listmonk.content.newsletter import Newsletter
 from collective.listmonk.services.base import PydanticService
 from datetime import datetime
 from datetime import timezone
 from plone import api
 from urllib.parse import quote
 from zExceptions import BadRequest
+from zope.i18n import translate
 
 import pydantic
 import uuid
@@ -27,8 +30,13 @@ class PendingConfirmation(pydantic.BaseModel):
 
 
 class CreateSubscription(PydanticService):
+    context: Newsletter
+
     def reply(self):
         data = self.validate_body(SubscriptionRequest)
+
+        available_list_ids = self.context.topics.values()
+        list_ids = list(set(data.list_ids).intersection(available_list_ids))
 
         subscriber = listmonk.get_subscriber(data.email)
         if subscriber:
@@ -39,7 +47,7 @@ class CreateSubscription(PydanticService):
                 json={
                     "ids": [subscriber["id"]],
                     "action": "add",
-                    "target_list_ids": data.list_ids,
+                    "target_list_ids": list_ids,
                     "status": "unconfirmed",
                 },
             )
@@ -52,17 +60,19 @@ class CreateSubscription(PydanticService):
                     "email": data.email,
                     "name": data.name,
                     "status": "enabled",
-                    "lists": data.list_ids,
+                    "lists": list_ids,
                 },
             )
             subscriber = result["data"]
 
         pc = create_pending_confirmation(subscriber["id"], data)
-        navroot = api.portal.get_navigation_root(self.context)
-        confirm_link = (
-            f"{navroot.absolute_url()}/subscriptions/confirm?token={quote(pc.token)}"
+        confirm_path = translate(
+            _("path_confirm", default="confirm"), context=self.request
         )
-        send_confirmation(data, confirm_link)
+        confirm_link = (
+            f"{self.context.absolute_url()}/{confirm_path}?token={quote(pc.token)}"
+        )
+        send_confirmation(self.context, self.request, data, confirm_link)
 
 
 class ConfirmSubscriptionRequest(pydantic.BaseModel):
@@ -130,20 +140,28 @@ def create_pending_confirmation(
     return pc
 
 
-def send_confirmation(data: SubscriptionRequest, confirm_link: str):
-    # lang = api.portal.get_current_language()
-    # TODO show list titles instead of ids
-    # TODO DE translation
-    subject = "Confirm Subscription"
-    body = f"""Confirm subscription
+def send_confirmation(
+    newsletter: Newsletter, request, data: SubscriptionRequest, confirm_link: str
+):
+    subject = translate(
+        _("email_confirm_subject", default="Confirm Subscription"), context=request
+    )
+    body = translate(
+        _(
+            "email_confirm_body",
+            default="""Confirm subscription
 
-Someone has requested a subscription to the following newsletters: {data.list_ids}
+Someone has requested a subscription to ${newsletter}
 
 To confirm this subscription, click this link:
-{confirm_link}
+${confirm_link}
 
 If you did not request this subscription, you can ignore this email.
-"""
+""",
+            mapping={"newsletter": newsletter.title, "confirm_link": confirm_link},
+        ),
+        context=request,
+    )
     api.portal.send_email(
         recipient=data.email,
         subject=subject,

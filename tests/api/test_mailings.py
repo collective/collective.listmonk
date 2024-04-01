@@ -10,23 +10,22 @@ class TestNewsletterMailingsService:
     def load_functional_layer(self, functional):
         pass
 
-    @pytest.fixture()
-    def url(self, portal):
-        return f"{portal.absolute_url()}/@mailings"
-
-    def _send_mailing(self, url, newsletter, manager_plone_client):
+    def _send_mailing(self, portal, newsletter, manager_plone_client):
         response = manager_plone_client.post(
-            url,
+            f"{newsletter.absolute_url()}/@mailings",
             json={
                 "subject": "Test mailing",
-                "body": "This is a test of the emergency broadcast system.",
-                "lists": [newsletter.absolute_url()],
+                "body": """This is a test of the emergency broadcast system.""",
+                "based_on": portal.absolute_url(),
+                "list_ids": [self.list_id],
             },
         )
         assert response.status_code == 200
 
-    def test_send_mailing(self, url, newsletter, manager_plone_client, mailhog_client):
-        self._send_mailing(url, newsletter, manager_plone_client)
+    def test_send_mailing(
+        self, portal, newsletter, manager_plone_client, mailhog_client
+    ):
+        self._send_mailing(portal, newsletter, manager_plone_client)
 
         # Assert email was sent
         messages = poll_for_mail(mailhog_client, 2)
@@ -36,47 +35,57 @@ class TestNewsletterMailingsService:
         assert msg["To"] == "john@example.com"
         assert msg["Subject"] == "Test mailing"
         assert msg["Content-Type"] == 'text/plain; charset="UTF-8"'
-        assert msg.get_content() == "This is a test of the emergency broadcast system."
+        assert (
+            msg.get_content()
+            == f"""This is a test of the emergency broadcast system.
+
+Unsubscribe: {newsletter.absolute_url()}/unsubscribe""".replace(
+                "\n", "\r\n"
+            )
+        )
         assert "List-Unsubscribe" not in msg
 
     def test_send_mailing_test(self):
         pass
 
     def test_get_mailings_for_newsletter(
-        self, url, portal, newsletter, manager_plone_client
+        self, portal, newsletter, manager_plone_client
     ):
-        self._send_mailing(url, newsletter, manager_plone_client)
+        self._send_mailing(portal, newsletter, manager_plone_client)
 
         response = manager_plone_client.get(
-            url,
-            params={"list": newsletter.absolute_url()},
+            f"{portal.absolute_url()}/@mailings",
+            params={"newsletter": newsletter.absolute_url()},
         )
         assert response.status_code == 200
         result = response.json()
         assert result["items_total"] == 1
         item = result["items"][0]
-        assert item["lists"][0]["@id"] == newsletter.absolute_url()
-        assert item["lists"][0]["title"] == newsletter.title
-        assert item["context"]["@id"] == portal.absolute_url()
+        assert item["newsletter"]["@id"] == newsletter.absolute_url()
+        assert item["newsletter"]["title"] == newsletter.title
+        assert item["topics"] == ["Test topic"]
+        assert item["based_on"]["@id"] == portal.absolute_url()
         assert item["sent_by"] == "admin"
         assert item["subject"] == "Test mailing"
         assert "sent_at" in item
 
     def test_get_mailings_for_source_content(
-        self, url, portal, newsletter, manager_plone_client
+        self, portal, newsletter, manager_plone_client
     ):
-        self._send_mailing(url, newsletter, manager_plone_client)
+        self._send_mailing(portal, newsletter, manager_plone_client)
 
         response = manager_plone_client.get(
-            url, params={"context": portal.absolute_url()}
+            f"{portal.absolute_url()}/@mailings",
+            params={"based_on": portal.absolute_url()},
         )
         assert response.status_code == 200
         result = response.json()
         assert result["items_total"] == 1
         item = result["items"][0]
-        assert item["lists"][0]["@id"] == newsletter.absolute_url()
-        assert item["lists"][0]["title"] == newsletter.title
-        assert item["context"]["@id"] == portal.absolute_url()
+        assert item["newsletter"]["@id"] == newsletter.absolute_url()
+        assert item["newsletter"]["title"] == newsletter.title
+        assert item["topics"] == ["Test topic"]
+        assert item["based_on"]["@id"] == portal.absolute_url()
         assert item["sent_by"] == "admin"
         assert item["subject"] == "Test mailing"
         assert "sent_at" in item
