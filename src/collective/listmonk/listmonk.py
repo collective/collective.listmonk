@@ -1,15 +1,25 @@
 from plone.restapi.testing import RelativeSession
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 from typing import Optional
 from zExceptions import BadRequest
 
 
-# TODO get real values from configuration
-listmonk = RelativeSession("http://localhost:9000/api")
-listmonk.auth = ("admin", "admin")
+class ListmonkSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="listmonk_")
+
+    url: str = "http://localhost:9000/api"
+    username: str = "admin"
+    password: str = "admin"
+
+
+settings = ListmonkSettings()
+client = RelativeSession(settings.url)
+client.auth = (settings.username, settings.password)
 
 
 def call_listmonk(method, path, **kw):
-    func = getattr(listmonk, method.lower())
+    func = getattr(client, method.lower())
     response = func(path, **kw)
     response.raise_for_status()
     return response.json()
