@@ -6,7 +6,7 @@
   <plone:service
       method="POST"
       factory=".subscriptions.CreateSubscription"
-      for="Products.CMFCore.interfaces.ISiteRoot"
+      for="..content.newsletter.INewsletter"
       permission="zope2.View"
       name="@subscriptions"
       />
@@ -14,7 +14,7 @@
   <plone:service
       method="PUT"
       factory=".subscriptions.ConfirmSubscription"
-      for="Products.CMFCore.interfaces.ISiteRoot"
+      for="..content.newsletter.INewsletter"
       permission="zope2.View"
       name="@subscriptions"
       />
@@ -22,7 +22,7 @@
   <plone:service
       method="DELETE"
       factory=".subscriptions.Unsubscribe"
-      for="Products.CMFCore.interfaces.ISiteRoot"
+      for="..content.newsletter.INewsletter"
       permission="zope2.View"
       name="@subscriptions"
       />
@@ -30,7 +30,7 @@
   <plone:service
       method="POST"
       factory=".mailings.SendMailing"
-      for="plone.dexterity.interfaces.IDexterityContent"
+      for="..content.newsletter.INewsletter"
       permission="collective.listmonk.newsletter.send"
       name="@mailings"
       />

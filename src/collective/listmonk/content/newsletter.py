@@ -8,8 +8,10 @@ from zope.interface import implementer
 class INewsletter(Schema):
     """A Listmonk newsletter."""
 
-    listmonk_id = schema.Int(
-        title=_("Listmonk newsletter id"),
+    topics = schema.Dict(
+        title=_("label_topics", "Topics"),
+        key_type=schema.TextLine(title=_("label_topic", default="Topic")),
+        value_type=schema.Int(title=_("label_list_id", default="Listmonk list id")),
         required=True,
     )
 

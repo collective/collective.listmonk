@@ -17,8 +17,8 @@ class TestSubscriptionsService:
         pass
 
     @pytest.fixture()
-    def url(self, portal):
-        return f"{portal.absolute_url()}/@subscriptions"
+    def url(self, newsletter):
+        return f"{newsletter.absolute_url()}/@subscriptions"
 
     def test_create_subscription(self, url, anon_plone_client, mailhog_client):
         response = anon_plone_client.post(
