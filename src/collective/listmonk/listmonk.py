@@ -1,16 +1,21 @@
 from plone.restapi.testing import RelativeSession
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 from typing import Optional
 from zExceptions import BadRequest
 
-import os
+
+class ListmonkSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="listmonk_")
+
+    url: str = "http://localhost:9000/api"
+    username: str = "admin"
+    password: str = "admin"
 
 
-LISTMONK_API = os.environ.get("LISTMONK_API", "http://localhost:9000/api")
-LISTMONK_USERNAME = os.environ.get("LISTMONK_USERNAME", "admin")
-LISTMONK_PASSWORD = os.environ.get("LISTMONK_PASSWORD", "admin")
-
-client = RelativeSession(LISTMONK_API)
-client.auth = (LISTMONK_USERNAME, LISTMONK_PASSWORD)
+settings = ListmonkSettings()
+client = RelativeSession(settings.url)
+client.auth = (settings.username, settings.password)
 
 
 def call_listmonk(method, path, **kw):

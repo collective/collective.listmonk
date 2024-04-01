@@ -51,6 +51,7 @@ setup(
         "plone.api",
         "plone.restapi",
         "pydantic",
+        "pydantic-settings",
         "souper.plone",
     ],
     extras_require={
