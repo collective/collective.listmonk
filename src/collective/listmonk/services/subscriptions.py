@@ -1,15 +1,12 @@
 from BTrees.OOBTree import OOBTree
+from collective.listmonk import listmonk
+from collective.listmonk.services.base import PydanticService
 from datetime import datetime
 from datetime import timezone
 from plone import api
-from plone.restapi.services import Service
-from plone.restapi.testing import RelativeSession
-from typing import Optional
-from typing import TypeVar
 from urllib.parse import quote
 from zExceptions import BadRequest
 
-import json
 import pydantic
 import uuid
 
@@ -29,32 +26,14 @@ class PendingConfirmation(pydantic.BaseModel):
     )
 
 
-T = TypeVar("T", bound=pydantic.BaseModel)
-
-
-class PydanticService(Service):
-    def validate(self, model: type[T]) -> T:
-        try:
-            return model.model_validate_json(self.request.get("BODY"))
-        except pydantic.ValidationError as exc:
-            raise BadRequest(
-                json.dumps(
-                    [
-                        {"message": error["msg"], "field": error["loc"][-1]}
-                        for error in exc.errors()
-                    ]
-                )
-            )
-
-
 class CreateSubscription(PydanticService):
     def reply(self):
-        data = self.validate(SubscriptionRequest)
+        data = self.validate_body(SubscriptionRequest)
 
-        subscriber = get_subscriber(data.email)
+        subscriber = listmonk.get_subscriber(data.email)
         if subscriber:
             # Subscriber already exists. Add new (unconfirmed) subscription.
-            call_listmonk(
+            listmonk.call_listmonk(
                 "put",
                 "/subscribers/lists",
                 json={
@@ -66,7 +45,7 @@ class CreateSubscription(PydanticService):
             )
         else:
             # Add new subscriber and (unconfirmed) subscription.
-            result = call_listmonk(
+            result = listmonk.call_listmonk(
                 "post",
                 "/subscribers",
                 json={
@@ -92,13 +71,13 @@ class ConfirmSubscriptionRequest(pydantic.BaseModel):
 
 class ConfirmSubscription(PydanticService):
     def reply(self):
-        data = self.validate(ConfirmSubscriptionRequest)
+        data = self.validate_body(ConfirmSubscriptionRequest)
         storage = get_pending_confirmation_storage()
         try:
             pc = PendingConfirmation.model_validate(storage[data.token])
         except KeyError:
             raise BadRequest("Invalid token.")
-        call_listmonk(
+        listmonk.call_listmonk(
             "put",
             "/subscribers/lists",
             json={
@@ -118,11 +97,11 @@ class UnsubscribeRequest(pydantic.BaseModel):
 
 class Unsubscribe(PydanticService):
     def reply(self):
-        data = self.validate(UnsubscribeRequest)
-        subscriber = get_subscriber(data.email)
+        data = self.validate_body(UnsubscribeRequest)
+        subscriber = listmonk.get_subscriber(data.email)
         if subscriber is None:
             raise BadRequest("Subscription not found")
-        call_listmonk(
+        listmonk.call_listmonk(
             "put",
             "/subscribers/lists",
             json={
@@ -131,31 +110,6 @@ class Unsubscribe(PydanticService):
                 "target_list_ids": data.list_ids,
             },
         )
-
-
-# TODO get real values from configuration
-listmonk = RelativeSession("http://localhost:9000/api")
-listmonk.auth = ("admin", "admin")
-
-
-def call_listmonk(method, path, **kw):
-    func = getattr(listmonk, method.lower())
-    response = func(path, **kw)
-    response.raise_for_status()
-    return response.json()
-
-
-def get_subscriber(email: str) -> Optional[dict]:
-    result = call_listmonk(
-        "get",
-        "/subscribers",
-        params={"query": f"email='{email}'"},
-    )
-    count = result["data"]["total"]
-    if count == 1:
-        return result["data"]["results"][0]
-    elif count > 1:
-        raise BadRequest("Found more than one subscriber")
 
 
 def get_pending_confirmation_storage() -> OOBTree:

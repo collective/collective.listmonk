@@ -1,3 +1,4 @@
+from collective.listmonk import listmonk
 from plone.app.contenttypes.testing import PLONE_APP_CONTENTTYPES_FIXTURE
 from plone.app.testing import applyProfile
 from plone.app.testing import FunctionalTesting
@@ -21,6 +22,32 @@ class ListmonkLayer(Layer):
             "docker compose -p listmonk_test -f docker-compose.yml up --wait",
             shell=True,
             close_fds=True,
+        )
+
+        # Configure SMTP server; disable unsubscribe headers
+        settings = listmonk.call_listmonk("get", "/settings")["data"]
+        smtp = settings["smtp"][0]
+        smtp.update(
+            {
+                "enabled": True,
+                "host": "mailhog",
+                "port": 1025,
+                "auth_protocol": "none",
+                "tls_type": "none",
+            }
+        )
+        settings.update({"smtp": [smtp], "privacy.unsubscribe_header": False})
+        listmonk.call_listmonk("put", "/settings", json=settings)
+
+        # Configure template
+        listmonk.call_listmonk(
+            "put",
+            "/templates/1",
+            json={
+                "name": "Default campaign template",
+                "type": "campaign",
+                "body": '{{ template "content" . }}',
+            },
         )
 
     def tearDown(self):

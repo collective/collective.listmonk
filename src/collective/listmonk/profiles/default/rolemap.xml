@@ -9,5 +9,13 @@
       <role name="Owner" />
       <role name="Contributor" />
     </permission>
+    <permission acquire="False"
+                name="collective.listmonk: Send Newsletter"
+    >
+      <role name="Manager" />
+      <role name="Site Administrator" />
+      <role name="Owner" />
+      <role name="Editor" />
+    </permission>
   </permissions>
 </rolemap>

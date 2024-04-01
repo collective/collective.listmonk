@@ -9,4 +9,9 @@
       title="collective.listmonk: Add Newsletter"
       />
 
+  <permission
+      id="collective.listmonk.newsletter.send"
+      title="collective.listmonk: Send Newsletter"
+      />
+
 </configure>

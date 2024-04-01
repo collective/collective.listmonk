@@ -46,11 +46,13 @@ setup(
     zip_safe=False,
     python_requires=">=3.11",
     install_requires=[
+        "annotated-types",
         "setuptools",
         "Products.CMFPlone",
         "plone.api",
         "plone.restapi",
         "pydantic",
+        "souper.plone",
     ],
     extras_require={
         "test": [
