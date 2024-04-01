@@ -2,14 +2,19 @@ from plone.restapi.testing import RelativeSession
 from typing import Optional
 from zExceptions import BadRequest
 
+import os
 
-# TODO get real values from configuration
-listmonk = RelativeSession("http://localhost:9000/api")
-listmonk.auth = ("admin", "admin")
+
+LISTMONK_API = os.environ.get("LISTMONK_API", "http://localhost:9000/api")
+LISTMONK_USERNAME = os.environ.get("LISTMONK_USERNAME", "admin")
+LISTMONK_PASSWORD = os.environ.get("LISTMONK_PASSWORD", "admin")
+
+client = RelativeSession(LISTMONK_API)
+client.auth = (LISTMONK_USERNAME, LISTMONK_PASSWORD)
 
 
 def call_listmonk(method, path, **kw):
-    func = getattr(listmonk, method.lower())
+    func = getattr(client, method.lower())
     response = func(path, **kw)
     response.raise_for_status()
     return response.json()
