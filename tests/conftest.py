@@ -59,7 +59,7 @@ def newsletter(portal):
             type="Newsletter",
             container=portal,
             title="Test Newsletter",
-            topics={"Test topic": 1},
+            topics=[{"title": "Test topic", "list_id": "1"}],
         )
         api.content.transition(newsletter, "publish")
         transaction.commit()

@@ -10,7 +10,7 @@ codespell_skip = "*.min.js"
 codespell_ignores = "vew"
 dependencies_ignores = "['zestreleaser.towncrier', 'zest.releaser', 'pytest', 'pytest-cov', 'pytest-plone']"
 dependencies_mappings = [
-    "'Products.CMFPlone' = ['plone.app.contenttypes', 'plone.app.uuid', 'plone.base', 'plone.dexterity', 'plone.registry', 'plone.supermodel', 'Products.GenericSetup']",
+    "'Products.CMFPlone' = ['plone.app.contenttypes', 'plone.app.uuid', 'plone.base', 'plone.dexterity', 'plone.registry', 'plone.schema', 'plone.supermodel', 'Products.GenericSetup']",
     "'plone.app.testing' = ['plone.testing']",
     "'souper.plone' = ['souper', 'repoze.catalog']",
     ]
