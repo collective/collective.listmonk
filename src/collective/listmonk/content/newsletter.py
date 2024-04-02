@@ -1,18 +1,39 @@
 from collective.listmonk import _
 from plone.dexterity.content import Container
+from plone.schema import JSONField
 from plone.supermodel.model import Schema
-from zope import schema
 from zope.interface import implementer
+
+import json
 
 
 class INewsletter(Schema):
     """A Listmonk newsletter."""
 
-    topics = schema.Dict(
+    topics = JSONField(
         title=_("label_topics", "Topics"),
-        key_type=schema.TextLine(title=_("label_topic", default="Topic")),
-        value_type=schema.Int(title=_("label_list_id", default="Listmonk list id")),
-        required=True,
+        schema=json.dumps(
+            {
+                "type": "array",
+                "items": {
+                    "title": "Topic",
+                    "type": "object",
+                    "fieldsets": [
+                        {
+                            "id": "default",
+                            "title": "Default",
+                            "fields": ["title", "list_id"],
+                        },
+                    ],
+                    "properties": {
+                        "title": {"title": "Topic", "type": "string"},
+                        "list_id": {"title": "List ID", "type": "string"},
+                    },
+                },
+            }
+        ),
+        default=[],
+        widget="json_list",
     )
 
 

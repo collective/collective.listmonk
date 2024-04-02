@@ -35,8 +35,10 @@ class CreateSubscription(PydanticService):
     def reply(self):
         data = self.validate_body(SubscriptionRequest)
 
-        available_list_ids = self.context.topics.values()
-        list_ids = list(set(data.list_ids).intersection(available_list_ids))
+        available_list_ids = [int(topic["list_id"]) for topic in self.context.topics]
+        list_ids = [
+            list_id for list_id in data.list_ids if list_id in available_list_ids
+        ]
 
         subscriber = listmonk.get_subscriber(data.email)
         if subscriber:

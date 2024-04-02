@@ -47,8 +47,16 @@ class SendMailing(PydanticService):
         if data.based_on:
             based_on = deserialize_obj_link(data.based_on)
 
-        list_ids = list(set(data.list_ids).intersection(self.context.topics.values()))
-        topics = [k for k, v in self.context.topics.items() if v in list_ids]
+        list_ids = []
+        topics = []
+        topics_by_list_id = {
+            int(topic["list_id"]): topic for topic in self.context.topics
+        }
+        for list_id in data.list_ids:
+            topic = topics_by_list_id.get(list_id)
+            if topic:
+                list_ids.append(list_id)
+                topics.append(topic["title"])
 
         # Store mailing in Plone
         # (do this first so we only send the email once if there's a conflict error)
