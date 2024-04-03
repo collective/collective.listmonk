@@ -11,6 +11,7 @@ from zExceptions import BadRequest
 from zope.i18n import translate
 
 import pydantic
+import transaction
 import uuid
 
 
@@ -68,8 +69,9 @@ class CreateSubscription(PydanticService):
             subscriber = result["data"]
 
         pc = create_pending_confirmation(subscriber["id"], data)
+        transaction.commit()
         confirm_path = translate(
-            _("path_confirm", default="confirm"), context=self.request
+            _("path_confirm", default="newsletter-confirm"), context=self.request
         )
         confirm_link = (
             f"{self.context.absolute_url()}/{confirm_path}?token={quote(pc.token)}"
@@ -151,9 +153,7 @@ def send_confirmation(
     body = translate(
         _(
             "email_confirm_body",
-            default="""Confirm subscription
-
-Someone has requested a subscription to ${newsletter}
+            default="""Someone has requested a subscription to ${newsletter}
 
 To confirm this subscription, click this link:
 ${confirm_link}

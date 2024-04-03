@@ -75,7 +75,8 @@ class SendMailing(PydanticService):
         transaction.commit()
 
         unsubscribe_path = translate(
-            _("path_unsubscribe", default="unsubscribe"), context=self.request
+            _("path_unsubscribe", default="newsletter-unsubscribe"),
+            context=self.request,
         )
         unsubscribe_link = f"{self.context.absolute_url()}/{unsubscribe_path}"
         body = data.body + translate(

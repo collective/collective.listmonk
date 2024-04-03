@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-03-18 19:37+0000\n"
+"POT-Creation-Date: 2024-04-03 20:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,4 +32,34 @@ msgstr ""
 
 #: collective/listmonk/profiles.zcml:21
 msgid "Uninstall collective.listmonk"
+msgstr ""
+
+#. Default: "Someone has requested a subscription to ${newsletter}\n\nTo confirm this subscription, click this link:\n${confirm_link}\n\nIf you did not request this subscription, you can ignore this email.\n"
+#: collective/listmonk/services/subscriptions.py:154
+msgid "email_confirm_body"
+msgstr ""
+
+#. Default: "Confirm Subscription"
+#: collective/listmonk/services/subscriptions.py:151
+msgid "email_confirm_subject"
+msgstr ""
+
+#. Default: "\n\nUnsubscribe: ${unsubscribe_link}\n"
+#: collective/listmonk/services/mailings.py:82
+msgid "email_mailing_footer"
+msgstr ""
+
+#. Default: "Topics"
+#: collective/listmonk/content/newsletter.py:14
+msgid "label_topics"
+msgstr ""
+
+#. Default: "newsletter-confirm"
+#: collective/listmonk/services/subscriptions.py:74
+msgid "path_confirm"
+msgstr ""
+
+#. Default: "newsletter-unsubscribe"
+#: collective/listmonk/services/mailings.py:78
+msgid "path_unsubscribe"
 msgstr ""
