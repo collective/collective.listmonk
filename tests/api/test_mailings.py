@@ -39,7 +39,7 @@ class TestNewsletterMailingsService:
             msg.get_content()
             == f"""This is a test of the emergency broadcast system.
 
-Unsubscribe: {newsletter.absolute_url()}/unsubscribe""".replace(
+Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
                 "\n", "\r\n"
             )
         )
