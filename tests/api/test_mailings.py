@@ -45,8 +45,38 @@ Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
         )
         assert "List-Unsubscribe" not in msg
 
-    def test_send_mailing_test(self):
-        pass
+    def test_send_mailing_test(
+        self, portal, newsletter, manager_plone_client, mailhog_client
+    ):
+        response = manager_plone_client.post(
+            f"{newsletter.absolute_url()}/@mailings",
+            json={
+                "subject": "Test mailing",
+                "body": """This is a test of the emergency broadcast system.""",
+                "based_on": portal.absolute_url(),
+                "list_ids": [self.list_id],
+                "send_test_to": ["anon@example.com"],
+            },
+        )
+        assert response.status_code == 200
+
+        # Assert email was sent
+        messages = poll_for_mail(mailhog_client, 3)
+        msg = email.message_from_string(
+            messages[0]["Raw"]["Data"], policy=email.policy.default
+        )
+        assert msg["To"] == "anon@example.com"
+        assert msg["Subject"] == "Test mailing"
+        assert msg["Content-Type"] == 'text/plain; charset="UTF-8"'
+        assert (
+            msg.get_content()
+            == f"""This is a test of the emergency broadcast system.
+
+Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
+                "\n", "\r\n"
+            )
+        )
+        assert "List-Unsubscribe" not in msg
 
     def test_get_mailings_for_newsletter(
         self, portal, newsletter, manager_plone_client
@@ -92,6 +122,7 @@ Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
 
 
 def poll_for_mail(mailhog_client, expected=1, retries=15):
+    messages = mailhog_client.get("/messages").json()
     orig_retries = retries
     while retries > 0:
         messages = mailhog_client.get("/messages").json()

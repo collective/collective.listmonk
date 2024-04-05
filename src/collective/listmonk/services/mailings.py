@@ -1,3 +1,4 @@
+from annotated_types import Len
 from collective.listmonk import _
 from collective.listmonk import listmonk
 from collective.listmonk.content.newsletter import Newsletter
@@ -18,7 +19,9 @@ from souper.interfaces import ICatalogFactory
 from souper.soup import get_soup
 from souper.soup import NodeAttributeIndexer
 from souper.soup import Record
+from typing import Annotated
 from typing import Optional
+from zExceptions import BadRequest
 from zope.component import getMultiAdapter
 from zope.i18n import translate
 from zope.interface import implementer
@@ -32,10 +35,11 @@ MAILINGS_SOUP = "collective.listmonk.mailings"
 
 
 class MailingRequest(pydantic.BaseModel):
-    subject: str
+    subject: Annotated[str, Len(min_length=1)]
     body: str
     list_ids: list[int]
     based_on: Optional[str]
+    send_test_to: Optional[list[str]] = None
 
 
 class SendMailing(PydanticService):
@@ -58,21 +62,26 @@ class SendMailing(PydanticService):
                 list_ids.append(list_id)
                 topics.append(topic["title"])
 
-        # Store mailing in Plone
-        # (do this first so we only send the email once if there's a conflict error)
-        record = Record()
-        record.attrs.update(
-            {
-                "subject": data.subject,
-                "newsletter": self.context.UID(),
-                "topics": topics,
-                "sent_at": datetime.now(),
-                "sent_by": api.user.get_current().getUserId(),
-                "based_on": based_on.UID() if based_on else None,
-            }
-        )
-        get_soup(MAILINGS_SOUP, self.context).add(record)
-        transaction.commit()
+        if not list_ids:
+            raise BadRequest("Must specify at least one valid list.")
+
+        is_test = data.send_test_to
+        if not is_test:
+            # Store mailing in Plone
+            # (do this first so we only send the email once if there's a conflict error)
+            record = Record()
+            record.attrs.update(
+                {
+                    "subject": data.subject,
+                    "newsletter": self.context.UID(),
+                    "topics": topics,
+                    "sent_at": datetime.now(),
+                    "sent_by": api.user.get_current().getUserId(),
+                    "based_on": based_on.UID() if based_on else None,
+                }
+            )
+            get_soup(MAILINGS_SOUP, self.context).add(record)
+            transaction.commit()
 
         unsubscribe_path = translate(
             _("path_unsubscribe", default="newsletter-unsubscribe"),
@@ -91,29 +100,42 @@ Unsubscribe: ${unsubscribe_link}
             self.request,
         )
 
+        campaignData = {
+            "name": data.subject,
+            "subject": data.subject,
+            "lists": list_ids,
+            "type": "regular",
+            "content_type": "plain",
+            "body": body,
+            "messenger": "email",
+        }
+
         # Create campaign in listmonk
         result = listmonk.call_listmonk(
             "post",
             "/campaigns",
-            json={
-                "name": data.subject,
-                "subject": data.subject,
-                "lists": list_ids,
-                "type": "regular",
-                "content_type": "plain",
-                "body": body,
-            },
+            json=campaignData,
         )
         campaign = result["data"]
-
-        # Start the draft campaign immediately
-        listmonk.call_listmonk(
-            "put",
-            f"/campaigns/{campaign['id']}/status",
-            json={
-                "status": "running",
-            },
-        )
+        if is_test:
+            # Send test to specified subscribers
+            listmonk.call_listmonk(
+                "post",
+                f"/campaigns/{campaign['id']}/test",
+                json={
+                    **campaignData,
+                    "subscribers": data.send_test_to,
+                },
+            )
+        else:
+            # Start the draft campaign immediately
+            listmonk.call_listmonk(
+                "put",
+                f"/campaigns/{campaign['id']}/status",
+                json={
+                    "status": "running",
+                },
+            )
 
 
 class MailingsQuery(pydantic.BaseModel):
