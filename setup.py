@@ -47,11 +47,13 @@ setup(
     python_requires=">=3.11",
     install_requires=[
         "setuptools",
+        "annotated-types",
         "Products.CMFPlone",
         "plone.api",
         "plone.restapi",
         "pydantic",
         "pydantic-settings",
+        "requests",
         "souper.plone",
     ],
     extras_require={
