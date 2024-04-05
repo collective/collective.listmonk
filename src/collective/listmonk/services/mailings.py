@@ -1,5 +1,4 @@
 from annotated_types import Len
-from collective.listmonk import _
 from collective.listmonk import listmonk
 from collective.listmonk.content.newsletter import Newsletter
 from collective.listmonk.services.base import deserialize_obj_link
@@ -23,7 +22,6 @@ from typing import Annotated
 from typing import Optional
 from zExceptions import BadRequest
 from zope.component import getMultiAdapter
-from zope.i18n import translate
 from zope.interface import implementer
 from ZTUtils.Lazy import LazyMap
 
@@ -83,30 +81,13 @@ class SendMailing(PydanticService):
             get_soup(MAILINGS_SOUP, self.context).add(record)
             transaction.commit()
 
-        unsubscribe_path = translate(
-            _("path_unsubscribe", default="newsletter-unsubscribe"),
-            context=self.request,
-        )
-        unsubscribe_link = f"{self.context.absolute_url()}/{unsubscribe_path}"
-        body = data.body + translate(
-            _(
-                "email_mailing_footer",
-                default="""
-
-Unsubscribe: ${unsubscribe_link}
-""",
-                mapping={"unsubscribe_link": unsubscribe_link},
-            ),
-            self.request,
-        )
-
         campaignData = {
             "name": data.subject,
             "subject": data.subject,
             "lists": list_ids,
             "type": "regular",
             "content_type": "plain",
-            "body": body,
+            "body": self.context.get_email_body(data.body),
             "messenger": "email",
             "from_email": self.context.get_email_sender(),
         }
