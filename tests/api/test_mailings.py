@@ -32,6 +32,7 @@ class TestNewsletterMailingsService:
         msg = email.message_from_string(
             messages[1]["Raw"]["Data"], policy=email.policy.default
         )
+        assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'
         assert msg["To"] == "john@example.com"
         assert msg["Subject"] == "Test mailing"
         assert msg["Content-Type"] == 'text/plain; charset="UTF-8"'
@@ -65,6 +66,7 @@ Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
         msg = email.message_from_string(
             messages[0]["Raw"]["Data"], policy=email.policy.default
         )
+        assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'
         assert msg["To"] == "anon@example.com"
         assert msg["Subject"] == "Test mailing"
         assert msg["Content-Type"] == 'text/plain; charset="UTF-8"'

@@ -60,6 +60,7 @@ def newsletter(portal):
             container=portal,
             title="Test Newsletter",
             topics=[{"title": "Test topic", "list_id": "1"}],
+            from_name="collective.listmonk tests",
         )
         api.content.transition(newsletter, "publish")
         transaction.commit()

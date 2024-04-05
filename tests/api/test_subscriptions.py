@@ -38,6 +38,7 @@ class TestSubscriptionsService:
         msg = email.message_from_string(
             messages[0]["Raw"]["Data"], policy=email.policy.default
         )
+        assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'
         assert msg["To"] == "subscriber@example.com"
 
         # Assert unconfirmed subscription was created in listmonk

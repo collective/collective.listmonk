@@ -108,6 +108,7 @@ Unsubscribe: ${unsubscribe_link}
             "content_type": "plain",
             "body": body,
             "messenger": "email",
+            "from_email": self.context.get_email_sender(),
         }
 
         # Create campaign in listmonk

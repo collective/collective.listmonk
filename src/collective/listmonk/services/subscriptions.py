@@ -165,6 +165,7 @@ If you did not request this subscription, you can ignore this email.
         context=request,
     )
     api.portal.send_email(
+        sender=newsletter.get_email_sender(),
         recipient=data.email,
         subject=subject,
         body=body,
