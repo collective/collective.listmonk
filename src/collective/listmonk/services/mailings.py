@@ -7,7 +7,6 @@ from datetime import datetime
 from plone import api
 from plone.app.uuid.utils import uuidToCatalogBrain
 from plone.restapi.batching import HypermediaBatch
-from plone.restapi.interfaces import ISerializeToJsonSummary
 from plone.restapi.serializer.converters import json_compatible
 from repoze.catalog.catalog import Catalog
 from repoze.catalog.indexes.field import CatalogFieldIndex
@@ -21,7 +20,6 @@ from souper.soup import Record
 from typing import Annotated
 from typing import Optional
 from zExceptions import BadRequest
-from zope.component import getMultiAdapter
 from zope.interface import implementer
 from ZTUtils.Lazy import LazyMap
 
@@ -78,7 +76,8 @@ class SendMailing(PydanticService):
                     "based_on": based_on.UID() if based_on else None,
                 }
             )
-            get_soup(MAILINGS_SOUP, self.context).add(record)
+            portal = api.portal.get()
+            get_soup(MAILINGS_SOUP, portal).add(record)
             transaction.commit()
 
         campaignData = {
@@ -143,11 +142,12 @@ class ListMailings(PydanticService):
         if criteria:
             query = And(*criteria)
         else:
-            query = NotEq("sent_at", 0)
+            query = NotEq("sent_at", datetime(2000, 1, 1))
         return query
 
     def run_query(self, queryobject, sort_index=None, reverse=False):
-        soup = get_soup(MAILINGS_SOUP, self.context)
+        portal = api.portal.get()
+        soup = get_soup(MAILINGS_SOUP, portal)
         size, iids = soup.catalog.query(
             queryobject,
             sort_index=sort_index,
@@ -157,7 +157,7 @@ class ListMailings(PydanticService):
         def get_record(i):
             return soup.data[i]
 
-        return LazyMap(get_record, list(iids), size)
+        return LazyMap(get_record, list(iids), size.total)
 
     def format_results(self, results):
         batch = HypermediaBatch(self.request, results)
@@ -178,9 +178,11 @@ class ListMailings(PydanticService):
         return results
 
     def serialize_item(self, uid: str):
-        obj = uuidToCatalogBrain(uid)
-        serializer = getMultiAdapter((obj, self.request), ISerializeToJsonSummary)
-        return serializer()
+        brain = uuidToCatalogBrain(uid)
+        return {
+            "@id": brain.getURL(),
+            "title": brain.Title,
+        }
 
 
 @implementer(ICatalogFactory)
