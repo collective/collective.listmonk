@@ -14,7 +14,7 @@ long_description = f"""
 
 setup(
     name="collective.listmonk",
-    version="1.0.0a1",
+    version="1.0.0a2.dev0",
     description="A Listmonk newsletter integration for Plone.",
     long_description=long_description,
     long_description_content_type="text/markdown",
