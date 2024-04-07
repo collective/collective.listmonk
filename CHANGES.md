@@ -9,6 +9,11 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a1 (2024-04-07)
+
+No significant changes.
+
+
 ## 1.0a1 (unreleased)
 
 - Initial development. @davisagli
