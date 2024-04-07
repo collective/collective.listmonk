@@ -1,12 +1,12 @@
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
+from requests.exceptions import ConnectionError
 from requests.exceptions import HTTPError
 from typing import Optional
-from urllib.parse import urljoin
-from urllib.parse import urlparse
 from zExceptions import BadRequest
 
 import requests
+import time
 
 
 class ListmonkSettings(BaseSettings):
@@ -17,34 +17,23 @@ class ListmonkSettings(BaseSettings):
     password: str = "admin"
 
 
-class RelativeSession(requests.Session):
-    def __init__(self, base_url):
-        super().__init__()
-
-        if not base_url.endswith("/"):
-            base_url += "/"
-        self.__base_url = base_url
-
-    def request(self, method, url, **kwargs):
-        if urlparse(url).scheme not in ("http", "https"):
-            url = url.lstrip("/")
-            url = urljoin(self.__base_url, url)
-        return super().request(method, url, **kwargs)
-
-
 settings = ListmonkSettings()
-client = RelativeSession(settings.url)
-client.auth = (settings.username, settings.password)
 
 
 def call_listmonk(method, path, **kw):
-    func = getattr(client, method.lower())
-    response = func(path, **kw)
+    func = getattr(requests, method.lower())
+    url = settings.url.rstrip("/") + "/" + path.lstrip("/")
+    try:
+        response = func(url, auth=(settings.username, settings.password), **kw)
+    except ConnectionError:
+        time.sleep(2)
+        response = func(url, auth=(settings.username, settings.password), **kw)
     try:
         response.raise_for_status()
     except HTTPError as err:
         if err.response.status_code == 400:
             raise err.__class__(err.response.json()["message"])
+        raise
     return response.json()
 
 
