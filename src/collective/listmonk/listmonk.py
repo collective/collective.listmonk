@@ -1,9 +1,12 @@
-from plone.restapi.testing import RelativeSession
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import HTTPError
 from typing import Optional
+from urllib.parse import urljoin
+from urllib.parse import urlparse
 from zExceptions import BadRequest
+
+import requests
 
 
 class ListmonkSettings(BaseSettings):
@@ -12,6 +15,21 @@ class ListmonkSettings(BaseSettings):
     url: str = "http://localhost:9000/api"
     username: str = "admin"
     password: str = "admin"
+
+
+class RelativeSession(requests.Session):
+    def __init__(self, base_url):
+        super().__init__()
+
+        if not base_url.endswith("/"):
+            base_url += "/"
+        self.__base_url = base_url
+
+    def request(self, method, url, **kwargs):
+        if urlparse(url).scheme not in ("http", "https"):
+            url = url.lstrip("/")
+            url = urljoin(self.__base_url, url)
+        return super().request(method, url, **kwargs)
 
 
 settings = ListmonkSettings()
