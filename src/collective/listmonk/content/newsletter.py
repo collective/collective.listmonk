@@ -69,10 +69,7 @@ class Newsletter(Container):
         return formataddr((from_name, from_address))
 
     def get_email_body(self, content):
-        parts = [self.email_header] if self.email_header else []
-        parts.append(content)
-        if self.email_footer:
-            parts.append(self.email_footer)
+        parts = [content]
 
         request = getRequest()
         unsubscribe_path = translate(

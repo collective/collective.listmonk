@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-04-03 20:23+0000\n"
+"POT-Creation-Date: 2024-04-08 03:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,13 +47,28 @@ msgstr ""
 msgid "email_confirm_subject"
 msgstr ""
 
-#. Default: "\n\nUnsubscribe: ${unsubscribe_link}\n"
-#: collective-listmonk/src/collective/listmonk/services/mailings.py:82
+#. Default: "---\nUnsubscribe: ${unsubscribe_link}"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:82
 msgid "email_mailing_footer"
 msgstr ""
 
+#. Default: "E-mail Footer"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:55
+msgid "label_email_footer"
+msgstr ""
+
+#. Default: "E-mail Sender Name (From)"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:45
+msgid "label_email_from_name"
+msgstr ""
+
+#. Default: "E-mail Header"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:50
+msgid "label_email_header"
+msgstr ""
+
 #. Default: "Topics"
-#: collective-listmonk/src/collective/listmonk/content/newsletter.py:14
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:19
 msgid "label_topics"
 msgstr ""
 
@@ -63,6 +78,6 @@ msgid "path_confirm"
 msgstr ""
 
 #. Default: "newsletter-unsubscribe"
-#: collective-listmonk/src/collective/listmonk/services/mailings.py:78
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:76
 msgid "path_unsubscribe"
 msgstr ""
