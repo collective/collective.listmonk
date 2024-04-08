@@ -9,6 +9,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a3 (2024-04-07)
+
+
+### Bug fixes:
+
+- Don't add header and footer to the email automatically, so the editor has control. @davisagli #11
+
 ## 1.0.0a2 (2024-04-07)
 
 
