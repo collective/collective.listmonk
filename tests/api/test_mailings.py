@@ -38,11 +38,7 @@ class TestNewsletterMailingsService:
         assert msg["Content-Type"] == 'text/plain; charset="UTF-8"'
         assert (
             msg.get_content()
-            == f"""(header)
-
-This is a test of the emergency broadcast system.
-
-(footer)
+            == f"""This is a test of the emergency broadcast system.
 
 ---
 Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
@@ -77,11 +73,7 @@ Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
         assert msg["Content-Type"] == 'text/plain; charset="UTF-8"'
         assert (
             msg.get_content()
-            == f"""(header)
-
-This is a test of the emergency broadcast system.
-
-(footer)
+            == f"""This is a test of the emergency broadcast system.
 
 ---
 Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
