@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-04-03 20:23+0000\n"
+"POT-Creation-Date: 2024-04-08 03:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,20 +37,35 @@ msgstr ""
 #. Default: "Someone has requested a subscription to ${newsletter}\n\nTo confirm this subscription, click this link:\n${confirm_link}\n\nIf you did not request this subscription, you can ignore this email.\n"
 #: collective/listmonk/services/subscriptions.py:154
 msgid "email_confirm_body"
-msgstr ""
+msgstr "Jemand hat ein Abonnement für ${newsletter} angefordert\n\nUm dieses Abonnement zu bestätigen, klicken Sie auf diesen Link:\n${confirm_link}\n\nWenn Sie dieses Abonnement nicht angefordert haben, können Sie diese E-Mail ignorieren.\n"
 
 #. Default: "Confirm Subscription"
 #: collective/listmonk/services/subscriptions.py:151
 msgid "email_confirm_subject"
+msgstr "Abonnement bestätigen"
+
+#. Default: "---\nUnsubscribe: ${unsubscribe_link}"
+#: collective/listmonk/content/newsletter.py:82
+msgid "email_mailing_footer"
+msgstr "---\nZur Abbestellung dieses Newsletters bitte auf folgenden Link klicken:\n${unsubscribe_link}"
+
+#. Default: "E-mail Footer"
+#: collective/listmonk/content/newsletter.py:55
+msgid "label_email_footer"
 msgstr ""
 
-#. Default: "\n\nUnsubscribe: ${unsubscribe_link}\n"
-#: collective/listmonk/services/mailings.py:82
-msgid "email_mailing_footer"
+#. Default: "E-mail Sender Name (From)"
+#: collective/listmonk/content/newsletter.py:45
+msgid "label_email_from_name"
+msgstr "E-Mail Absender Name (From)"
+
+#. Default: "E-mail Header"
+#: collective/listmonk/content/newsletter.py:50
+msgid "label_email_header"
 msgstr ""
 
 #. Default: "Topics"
-#: collective/listmonk/content/newsletter.py:14
+#: collective/listmonk/content/newsletter.py:19
 msgid "label_topics"
 msgstr "Themen"
 
@@ -60,6 +75,6 @@ msgid "path_confirm"
 msgstr "newsletter-bestaetigen"
 
 #. Default: "newsletter-unsubscribe"
-#: collective/listmonk/services/mailings.py:78
+#: collective/listmonk/content/newsletter.py:76
 msgid "path_unsubscribe"
 msgstr "newsletter-abbestellen"
