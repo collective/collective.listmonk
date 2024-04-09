@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-04-08 03:15+0000\n"
+"POT-Creation-Date: 2024-04-09 21:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,19 +35,29 @@ msgid "Uninstall collective.listmonk"
 msgstr ""
 
 #. Default: "Someone has requested a subscription to ${newsletter}\n\nTo confirm this subscription, click this link:\n${confirm_link}\n\nIf you did not request this subscription, you can ignore this email.\n"
-#: collective/listmonk/services/subscriptions.py:154
+#: collective/listmonk/services/subscriptions.py:87
 msgid "email_confirm_body"
 msgstr "Jemand hat ein Abonnement für ${newsletter} angefordert\n\nUm dieses Abonnement zu bestätigen, klicken Sie auf diesen Link:\n${confirm_link}\n\nWenn Sie dieses Abonnement nicht angefordert haben, können Sie diese E-Mail ignorieren.\n"
 
 #. Default: "Confirm Subscription"
-#: collective/listmonk/services/subscriptions.py:151
+#: collective/listmonk/services/subscriptions.py:83
 msgid "email_confirm_subject"
 msgstr "Abonnement bestätigen"
 
 #. Default: "---\nUnsubscribe: ${unsubscribe_link}"
-#: collective/listmonk/content/newsletter.py:82
+#: collective/listmonk/content/newsletter.py:77
 msgid "email_mailing_footer"
 msgstr "---\nZur Abbestellung dieses Newsletters bitte auf folgenden Link klicken:\n${unsubscribe_link}"
+
+#. Default: "You are now subscribed to the ${newsletter}\n\nYou can unsubscribe using this link:\n${unsubscribe_link}\n"
+#: collective/listmonk/services/subscriptions.py:146
+msgid "email_subscribed_body"
+msgstr "Sie haben jetzt den ${newsletter} abonniert\n\nZur Abbestellung dieses Newsletters bitte auf folgenden Link klicken:\n${unsubscribe_link}\n"
+
+#. Default: "Subscription confirmed"
+#: collective/listmonk/services/subscriptions.py:142
+msgid "email_subscribed_subject"
+msgstr "Abonnement bestätigt"
 
 #. Default: "E-mail Footer"
 #: collective/listmonk/content/newsletter.py:55
@@ -70,11 +80,11 @@ msgid "label_topics"
 msgstr "Themen"
 
 #. Default: "newsletter-confirm"
-#: collective/listmonk/services/subscriptions.py:74
+#: collective/listmonk/services/subscriptions.py:77
 msgid "path_confirm"
 msgstr "newsletter-bestaetigen"
 
 #. Default: "newsletter-unsubscribe"
-#: collective/listmonk/content/newsletter.py:76
+#: collective/listmonk/content/newsletter.py:91
 msgid "path_unsubscribe"
 msgstr "newsletter-abbestellen"

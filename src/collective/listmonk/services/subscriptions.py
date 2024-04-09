@@ -88,11 +88,11 @@ class CreateSubscription(PydanticService):
                 "email_confirm_body",
                 default="""Someone has requested a subscription to ${newsletter}
 
-    To confirm this subscription, click this link:
-    ${confirm_link}
+To confirm this subscription, click this link:
+${confirm_link}
 
-    If you did not request this subscription, you can ignore this email.
-    """,
+If you did not request this subscription, you can ignore this email.
+""",
                 mapping={
                     "newsletter": self.context.title,
                     "confirm_link": confirm_link,
