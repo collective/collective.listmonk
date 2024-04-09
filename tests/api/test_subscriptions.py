@@ -1,3 +1,4 @@
+from ..conftest import poll_for_mail
 from collective.listmonk import listmonk
 from urllib.parse import unquote
 
@@ -48,7 +49,9 @@ class TestSubscriptionsService:
         ][0]
         assert subscription["subscription_status"] == "unconfirmed"
 
-    def test_create_subscription_again(self, url, anon_plone_client, mailhog_client):
+    def test_create_subscription_again(
+        self, newsletter, url, anon_plone_client, mailhog_client
+    ):
         # Trying to create it a second time re-sends the confirmation.
         response = anon_plone_client.post(
             url,
@@ -80,6 +83,27 @@ class TestSubscriptionsService:
             lst for lst in subscriber["lists"] if lst["id"] == self.list_id
         ][0]
         assert subscription["subscription_status"] == "confirmed"
+
+        # Confirm email was sent to confirm subscription
+        poll_for_mail(mailhog_client, 3)
+        resp = mailhog_client.get("/messages")
+        messages = resp.json()
+        assert len(messages) == 3
+        msg = email.message_from_string(
+            messages[0]["Raw"]["Data"], policy=email.policy.default
+        )
+        body = msg.get_content()
+        assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'
+        assert msg["To"] == "subscriber@example.com"
+        assert msg["Subject"] == "Subscription confirmed"
+        assert msg["Content-Type"] == 'text/plain; charset="utf-8"'
+        assert (
+            msg.get_content()
+            == f"""You are now subscribed to the Test Newsletter\r
+\r
+You can unsubscribe using this link:\r
+{newsletter.absolute_url()}/newsletter-unsubscribe"""
+        )
 
     def test_create_subscription__bad_request(self, url, anon_plone_client):
         response = anon_plone_client.post(

@@ -1,6 +1,7 @@
+from ..conftest import poll_for_mail
+
 import email
 import pytest
-import time
 
 
 class TestNewsletterMailingsService:
@@ -123,15 +124,3 @@ Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
         assert item["sent_by"] == "admin"
         assert item["subject"] == "Test mailing"
         assert "sent_at" in item
-
-
-def poll_for_mail(mailhog_client, expected=1, retries=15):
-    messages = mailhog_client.get("/messages").json()
-    orig_retries = retries
-    while retries > 0:
-        messages = mailhog_client.get("/messages").json()
-        if len(messages) == expected:
-            return messages
-        retries -= 1
-        time.sleep(1)
-    raise Exception(f"Timed out waiting for mail after {orig_retries}s")
