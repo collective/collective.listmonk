@@ -72,20 +72,23 @@ class Newsletter(Container):
         parts = [content]
 
         request = getRequest()
-        unsubscribe_path = translate(
-            _("path_unsubscribe", default="newsletter-unsubscribe"),
-            context=request,
-        )
-        unsubscribe_link = f"{self.absolute_url()}/{unsubscribe_path}"
         parts.append(
             translate(
                 _(
                     "email_mailing_footer",
                     default="---\nUnsubscribe: ${unsubscribe_link}",
-                    mapping={"unsubscribe_link": unsubscribe_link},
+                    mapping={"unsubscribe_link": self.get_unsubscribe_link()},
                 ),
                 request,
             )
         )
 
         return "\n\n".join(parts)
+
+    def get_unsubscribe_link(self):
+        request = getRequest()
+        unsubscribe_path = translate(
+            _("path_unsubscribe", default="newsletter-unsubscribe"),
+            context=request,
+        )
+        return f"{self.absolute_url()}/{unsubscribe_path}"

@@ -39,7 +39,7 @@ class ListmonkLayer(Layer):
         settings.update({"smtp": [smtp], "privacy.unsubscribe_header": False})
         listmonk.call_listmonk("put", "/settings", json=settings)
 
-        # Configure template
+        # Configure templates
         listmonk.call_listmonk(
             "put",
             "/templates/1",

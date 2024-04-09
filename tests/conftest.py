@@ -11,6 +11,7 @@ from pythongettext.msgfmt import PoSyntaxError
 from typing import Generator
 
 import pytest
+import time
 import transaction
 
 
@@ -98,3 +99,15 @@ def listmonk_client():
 @pytest.fixture()
 def mailhog_client():
     return RelativeSession("http://localhost:8025/api/v1")
+
+
+def poll_for_mail(mailhog_client, expected=1, retries=15):
+    messages = mailhog_client.get("/messages").json()
+    orig_retries = retries
+    while retries > 0:
+        messages = mailhog_client.get("/messages").json()
+        if len(messages) == expected:
+            return messages
+        retries -= 1
+        time.sleep(1)
+    raise Exception(f"Timed out waiting for mail after {orig_retries}s")

@@ -70,13 +70,43 @@ class CreateSubscription(PydanticService):
 
         pc = create_pending_confirmation(subscriber["id"], data)
         transaction.commit()
+        self.send_confirmation(data, pc)
+
+    def send_confirmation(self, data: SubscriptionRequest, pc: PendingConfirmation):
         confirm_path = translate(
             _("path_confirm", default="newsletter-confirm"), context=self.request
         )
         confirm_link = (
             f"{self.context.absolute_url()}/{confirm_path}?token={quote(pc.token)}"
         )
-        send_confirmation(self.context, self.request, data, confirm_link)
+        subject = translate(
+            _("email_confirm_subject", default="Confirm Subscription"),
+            context=self.request,
+        )
+        body = translate(
+            _(
+                "email_confirm_body",
+                default="""Someone has requested a subscription to ${newsletter}
+
+    To confirm this subscription, click this link:
+    ${confirm_link}
+
+    If you did not request this subscription, you can ignore this email.
+    """,
+                mapping={
+                    "newsletter": self.context.title,
+                    "confirm_link": confirm_link,
+                },
+            ),
+            context=self.request,
+        )
+        api.portal.send_email(
+            sender=self.context.get_email_sender(),
+            recipient=data.email,
+            subject=subject,
+            body=body,
+            immediate=True,
+        )
 
 
 class ConfirmSubscriptionRequest(pydantic.BaseModel):
@@ -102,6 +132,38 @@ class ConfirmSubscription(PydanticService):
             },
         )
         del storage[data.token]
+        transaction.commit()
+        self.send_confirmation(pc)
+
+    def send_confirmation(self, pc: PendingConfirmation):
+        subscriber = listmonk.call_listmonk("get", f"/subscribers/{pc.sub_id}")
+        email = subscriber["data"]["email"]
+        subject = translate(
+            _("email_subscribed_subject", default="Subscription confirmed"),
+            context=self.request,
+        )
+        body = translate(
+            _(
+                "email_subscribed_body",
+                default="""You are now subscribed to the ${newsletter}
+
+You can unsubscribe using this link:
+${unsubscribe_link}
+""",
+                mapping={
+                    "newsletter": self.context.title,
+                    "unsubscribe_link": self.context.get_unsubscribe_link(),
+                },
+            ),
+            context=self.request,
+        )
+        api.portal.send_email(
+            sender=self.context.get_email_sender(),
+            recipient=email,
+            subject=subject,
+            body=body,
+            immediate=True,
+        )
 
 
 class UnsubscribeRequest(pydantic.BaseModel):
@@ -142,32 +204,3 @@ def create_pending_confirmation(
     pc = PendingConfirmation(token=token, sub_id=sub_id, list_ids=data.list_ids)
     storage[token] = pc.model_dump()
     return pc
-
-
-def send_confirmation(
-    newsletter: Newsletter, request, data: SubscriptionRequest, confirm_link: str
-):
-    subject = translate(
-        _("email_confirm_subject", default="Confirm Subscription"), context=request
-    )
-    body = translate(
-        _(
-            "email_confirm_body",
-            default="""Someone has requested a subscription to ${newsletter}
-
-To confirm this subscription, click this link:
-${confirm_link}
-
-If you did not request this subscription, you can ignore this email.
-""",
-            mapping={"newsletter": newsletter.title, "confirm_link": confirm_link},
-        ),
-        context=request,
-    )
-    api.portal.send_email(
-        sender=newsletter.get_email_sender(),
-        recipient=data.email,
-        subject=subject,
-        body=body,
-        immediate=True,
-    )
