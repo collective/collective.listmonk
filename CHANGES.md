@@ -9,6 +9,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a4 (2024-04-09)
+
+
+### New features:
+
+- Send an email confirmation of a new subscription. @davisagli #12
+
 ## 1.0.0a3 (2024-04-07)
 
 
