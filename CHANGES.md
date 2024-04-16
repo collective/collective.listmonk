@@ -9,6 +9,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a5 (2024-04-15)
+
+
+### Bug fixes:
+
+- Make @mailings GET service available on any content where the user has Send Newsletter permission. @davisagli #13
+
 ## 1.0.0a4 (2024-04-09)
 
 
