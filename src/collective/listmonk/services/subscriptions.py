@@ -168,13 +168,17 @@ ${unsubscribe_link}?s=${sub_uuid}
 
 
 class UnsubscribeRequest(pydantic.BaseModel):
-    list_ids: list[int]
+    list_ids: list[int] = None
     sub_uuid: str
 
 
 class Unsubscribe(PydanticService):
     def reply(self):
         data = self.validate_body(UnsubscribeRequest)
+        list_ids = data.list_ids
+        if list_ids is None:
+            list_ids = [int(topic["list_id"]) for topic in self.context.topics]
+
         subscriber = listmonk.find_subscriber(uuid=data.sub_uuid)
         if subscriber is None:
             raise BadRequest("Subscription not found")
@@ -183,24 +187,24 @@ class Unsubscribe(PydanticService):
             for list in subscriber["lists"]
             if list["subscription_status"] == "confirmed"
         ]
-        if set(current_lists) == set(data.list_ids):
-            # Unsubscribing from all lists.
-            # Delete the subscriber.
-            listmonk.call_listmonk(
-                "delete",
-                f"/subscribers/{subscriber['id']}",
-            )
-        else:
-            # Unsubscribing from some lists.
-            # Update the subscriptions.
+        if set(current_lists) - set(list_ids):
+            # Some subscriptions will remain.
+            # Unsubscribe from the others.
             listmonk.call_listmonk(
                 "put",
                 "/subscribers/lists",
                 json={
                     "ids": [subscriber["id"]],
                     "action": "unsubscribe",
-                    "target_list_ids": data.list_ids,
+                    "target_list_ids": list_ids,
                 },
+            )
+        else:
+            # Unsubscribing from all lists.
+            # Delete the subscriber.
+            listmonk.call_listmonk(
+                "delete",
+                f"/subscribers/{subscriber['id']}",
             )
 
 
