@@ -43,7 +43,7 @@ class TestSubscriptionsService:
         assert msg["To"] == "subscriber@example.com"
 
         # Assert unconfirmed subscription was created in listmonk
-        subscriber = listmonk.get_subscriber("subscriber@example.com")
+        subscriber = listmonk.find_subscriber(email="subscriber@example.com")
         subscription = [
             lst for lst in subscriber["lists"] if lst["id"] == self.list_id
         ][0]
@@ -78,7 +78,7 @@ class TestSubscriptionsService:
         assert response.status_code == 200
 
         # Confirm status was updated in listmonk
-        subscriber = listmonk.get_subscriber("subscriber@example.com")
+        subscriber = listmonk.find_subscriber(email="subscriber@example.com")
         subscription = [
             lst for lst in subscriber["lists"] if lst["id"] == self.list_id
         ][0]
@@ -102,7 +102,7 @@ class TestSubscriptionsService:
             == f"""You are now subscribed to the Test Newsletter\r
 \r
 You can unsubscribe using this link:\r
-{newsletter.absolute_url()}/newsletter-unsubscribe"""
+{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}"""
         )
 
     def test_create_subscription__bad_request(self, url, anon_plone_client):
@@ -122,20 +122,18 @@ You can unsubscribe using this link:\r
         assert response.status_code == 400
 
     def test_unsubscribe(self, url, anon_plone_client):
+        subscriber = listmonk.find_subscriber(email="subscriber@example.com")
         response = anon_plone_client.delete(
             url,
             json={
-                "email": "subscriber@example.com",
+                "sub_uuid": subscriber["uuid"],
                 "list_ids": [self.list_id],
             },
         )
         assert response.status_code == 200
 
-        subscriber = listmonk.get_subscriber("subscriber@example.com")
-        subscription = [
-            lst for lst in subscriber["lists"] if lst["id"] == self.list_id
-        ][0]
-        assert subscription["subscription_status"] == "unsubscribed"
+        subscriber = listmonk.find_subscriber(email="subscriber@example.com")
+        assert subscriber is None
 
     def test_unsubscribe__unknown_email(self, url, anon_plone_client):
         response = anon_plone_client.delete(
