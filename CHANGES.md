@@ -9,6 +9,15 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a6 (2024-04-22)
+
+
+### New features:
+
+- Unsubscribe links now include a subscriber UUID, so it's not possible to unsubscribe a different subscriber.
+  Also, if the user is unsubscribed from all lists, the listmonk subscriber will be deleted, to avoid retaining private data. @davisagli #14
+- Add options to customize the confirmation email for a newsletter. @davisagli #15
+
 ## 1.0.0a5 (2024-04-15)
 
 
