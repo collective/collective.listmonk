@@ -44,7 +44,8 @@ class TestNewsletterMailingsService:
             == f"""This is a test of the emergency broadcast system.
 
 ---
-Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}""".replace(
+To unsubscribe, please click on the following link:
+{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}""".replace(
                 "\n", "\r\n"
             )
         )
@@ -80,7 +81,8 @@ Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['u
             == f"""This is a test of the emergency broadcast system.
 
 ---
-Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}""".replace(
+To unsubscribe, please click on the following link:
+{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}""".replace(
                 "\n", "\r\n"
             )
         )

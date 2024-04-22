@@ -56,6 +56,29 @@ class INewsletter(Schema):
         required=False,
     )
 
+    confirm_email_subject = schema.TextLine(
+        title=_("label_confirm_email_subject", default="Confirmation E-mail Subject"),
+        default=_(
+            "default_confirm_email_subject", default="Confirm {newsletter} subscription"
+        ),
+        required=True,
+    )
+
+    confirm_email_body = schema.Text(
+        title=_("label_confirm_email_body", default="Confirmation E-mail Body"),
+        default=_(
+            "default_confirm_email_body",
+            default="""Thank you for subscribing to the {newsletter}.
+
+To confirm your subscription, please click on this link:
+{confirm_link}
+
+If you have not requested this subscription, you can ignore this e-mail.
+""",
+        ),
+        required=True,
+    )
+
 
 @implementer(INewsletter)
 class Newsletter(Container):
@@ -76,7 +99,7 @@ class Newsletter(Container):
             translate(
                 _(
                     "email_mailing_footer",
-                    default="---\nUnsubscribe: ${unsubscribe_link}",
+                    default="---\nTo unsubscribe, please click on the following link:\n${unsubscribe_link}",
                     mapping={"unsubscribe_link": self.get_unsubscribe_link()},
                 ),
                 request,

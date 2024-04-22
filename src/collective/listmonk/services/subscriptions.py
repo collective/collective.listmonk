@@ -40,6 +40,16 @@ class CreateSubscription(PydanticService):
         list_ids = [
             list_id for list_id in data.list_ids if list_id in available_list_ids
         ]
+        if not list_ids:
+            raise Exception(
+                translate(
+                    _(
+                        "error_no_lists",
+                        default="Please select a topic to subscribe to.",
+                    ),
+                    context=self.request,
+                )
+            )
 
         subscriber = listmonk.find_subscriber(email=data.email)
         if subscriber:
@@ -80,25 +90,10 @@ class CreateSubscription(PydanticService):
             f"{self.context.absolute_url()}/{confirm_path}?token={quote(pc.token)}"
         )
         subject = translate(
-            _("email_confirm_subject", default="Confirm Subscription"),
-            context=self.request,
-        )
-        body = translate(
-            _(
-                "email_confirm_body",
-                default="""Someone has requested a subscription to ${newsletter}
-
-To confirm this subscription, click this link:
-${confirm_link}
-
-If you did not request this subscription, you can ignore this email.
-""",
-                mapping={
-                    "newsletter": self.context.title,
-                    "confirm_link": confirm_link,
-                },
-            ),
-            context=self.request,
+            self.context.confirm_email_subject, context=self.request
+        ).format(newsletter=self.context.title)
+        body = translate(self.context.confirm_email_body, context=self.request).format(
+            newsletter=self.context.title, confirm_link=confirm_link
         )
         api.portal.send_email(
             sender=self.context.get_email_sender(),
@@ -142,21 +137,29 @@ class ConfirmSubscription(PydanticService):
             _("email_subscribed_subject", default="Subscription confirmed"),
             context=self.request,
         )
-        body = translate(
-            _(
-                "email_subscribed_body",
-                default="""You are now subscribed to the ${newsletter}
-
-You can unsubscribe using this link:
-${unsubscribe_link}?s=${sub_uuid}
-""",
-                mapping={
-                    "newsletter": self.context.title,
-                    "unsubscribe_link": self.context.get_unsubscribe_link(),
-                    "sub_uuid": subscriber["data"]["uuid"],
-                },
-            ),
-            context=self.request,
+        unsubscribe_link = (
+            f"{self.context.get_unsubscribe_link()}?s={subscriber['data']['uuid']}"
+        )
+        body = (
+            translate(
+                _(
+                    "email_subscribed_body",
+                    default="You are now subscribed to the ${newsletter}",
+                    mapping={
+                        "newsletter": self.context.title,
+                    },
+                ),
+                context=self.request,
+            )
+            + "\n\n"
+            + translate(
+                _(
+                    "email_mailing_footer",
+                    default="---\nTo unsubscribe, please click on the following link:\n${unsubscribe_link}",
+                    mapping={"unsubscribe_link": unsubscribe_link},
+                ),
+                context=self.request,
+            )
         )
         api.portal.send_email(
             sender=self.context.get_email_sender(),

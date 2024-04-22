@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-04-22 18:07+0000\n"
+"POT-Creation-Date: 2024-04-22 20:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,29 +37,45 @@ msgstr ""
 msgid "Uninstall collective.listmonk"
 msgstr ""
 
-#. Default: "Someone has requested a subscription to ${newsletter}\n\nTo confirm this subscription, click this link:\n${confirm_link}\n\nIf you did not request this subscription, you can ignore this email.\n"
-#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:87
-msgid "email_confirm_body"
+#. Default: "Thank you for subscribing to the {newsletter}.\n\nTo confirm your subscription, please click on this link:\n{confirm_link}\n\nIf you have not requested this subscription, you can ignore this e-mail.\n"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:69
+msgid "default_confirm_email_body"
 msgstr ""
 
-#. Default: "Confirm Subscription"
-#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:83
-msgid "email_confirm_subject"
+#. Default: "Confirm {newsletter} subscription"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:61
+msgid "default_confirm_email_subject"
 msgstr ""
 
-#. Default: "---\nUnsubscribe: ${unsubscribe_link}"
-#: collective-listmonk/src/collective/listmonk/content/newsletter.py:77
+#. Default: "---\nTo unsubscribe, please click on the following link:\n${unsubscribe_link}"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:100
+#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:148
 msgid "email_mailing_footer"
 msgstr ""
 
-#. Default: "You are now subscribed to the ${newsletter}\n\nYou can unsubscribe using this link:\n${unsubscribe_link}?s=${sub_uuid}\n"
-#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:146
+#. Default: "You are now subscribed to the ${newsletter}"
+#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:137
 msgid "email_subscribed_body"
 msgstr ""
 
 #. Default: "Subscription confirmed"
-#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:142
+#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:129
 msgid "email_subscribed_subject"
+msgstr ""
+
+#. Default: "Please select a topic to subscribe to."
+#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:44
+msgid "error_no_lists"
+msgstr ""
+
+#. Default: "Confirmation E-mail Body"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:68
+msgid "label_confirm_email_body"
+msgstr ""
+
+#. Default: "Confirmation E-mail Subject"
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:60
+msgid "label_confirm_email_subject"
 msgstr ""
 
 #. Default: "E-mail Footer"
@@ -83,11 +99,11 @@ msgid "label_topics"
 msgstr ""
 
 #. Default: "newsletter-confirm"
-#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:77
+#: collective-listmonk/src/collective/listmonk/services/subscriptions.py:79
 msgid "path_confirm"
 msgstr ""
 
 #. Default: "newsletter-unsubscribe"
-#: collective-listmonk/src/collective/listmonk/content/newsletter.py:91
+#: collective-listmonk/src/collective/listmonk/content/newsletter.py:114
 msgid "path_unsubscribe"
 msgstr ""
