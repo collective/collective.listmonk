@@ -41,7 +41,7 @@ class CreateSubscription(PydanticService):
             list_id for list_id in data.list_ids if list_id in available_list_ids
         ]
 
-        subscriber = listmonk.get_subscriber(data.email)
+        subscriber = listmonk.find_subscriber(email=data.email)
         if subscriber:
             # Subscriber already exists. Add new (unconfirmed) subscription.
             listmonk.call_listmonk(
@@ -148,11 +148,12 @@ class ConfirmSubscription(PydanticService):
                 default="""You are now subscribed to the ${newsletter}
 
 You can unsubscribe using this link:
-${unsubscribe_link}
+${unsubscribe_link}?s=${sub_uuid}
 """,
                 mapping={
                     "newsletter": self.context.title,
                     "unsubscribe_link": self.context.get_unsubscribe_link(),
+                    "sub_uuid": subscriber["data"]["uuid"],
                 },
             ),
             context=self.request,
@@ -167,25 +168,44 @@ ${unsubscribe_link}
 
 
 class UnsubscribeRequest(pydantic.BaseModel):
-    list_ids: list[int]
-    email: str
+    list_ids: list[int] = None
+    sub_uuid: str
 
 
 class Unsubscribe(PydanticService):
     def reply(self):
         data = self.validate_body(UnsubscribeRequest)
-        subscriber = listmonk.get_subscriber(data.email)
+        list_ids = data.list_ids
+        if list_ids is None:
+            list_ids = [int(topic["list_id"]) for topic in self.context.topics]
+
+        subscriber = listmonk.find_subscriber(uuid=data.sub_uuid)
         if subscriber is None:
             raise BadRequest("Subscription not found")
-        listmonk.call_listmonk(
-            "put",
-            "/subscribers/lists",
-            json={
-                "ids": [subscriber["id"]],
-                "action": "unsubscribe",
-                "target_list_ids": data.list_ids,
-            },
-        )
+        current_lists = [
+            list["id"]
+            for list in subscriber["lists"]
+            if list["subscription_status"] == "confirmed"
+        ]
+        if set(current_lists) - set(list_ids):
+            # Some subscriptions will remain.
+            # Unsubscribe from the others.
+            listmonk.call_listmonk(
+                "put",
+                "/subscribers/lists",
+                json={
+                    "ids": [subscriber["id"]],
+                    "action": "unsubscribe",
+                    "target_list_ids": list_ids,
+                },
+            )
+        else:
+            # Unsubscribing from all lists.
+            # Delete the subscriber.
+            listmonk.call_listmonk(
+                "delete",
+                f"/subscribers/{subscriber['id']}",
+            )
 
 
 def get_pending_confirmation_storage() -> OOBTree:

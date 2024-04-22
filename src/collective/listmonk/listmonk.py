@@ -37,11 +37,12 @@ def call_listmonk(method, path, **kw):
     return response.json()
 
 
-def get_subscriber(email: str) -> Optional[dict]:
+def find_subscriber(**filters: str) -> Optional[dict]:
+    query = " AND ".join(f"{k}='{v}'" for k, v in filters.items())
     result = call_listmonk(
         "get",
         "/subscribers",
-        params={"query": f"email='{email}'"},
+        params={"query": query},
     )
     count = result["data"]["total"]
     if count == 1:

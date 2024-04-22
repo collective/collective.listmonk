@@ -1,4 +1,5 @@
 from ..conftest import poll_for_mail
+from collective.listmonk import listmonk
 
 import email
 import pytest
@@ -29,6 +30,7 @@ class TestNewsletterMailingsService:
         self._send_mailing(portal, newsletter, manager_plone_client)
 
         # Assert email was sent
+        subscriber = listmonk.find_subscriber(email="john@example.com")
         messages = poll_for_mail(mailhog_client, 2)
         msg = email.message_from_string(
             messages[1]["Raw"]["Data"], policy=email.policy.default
@@ -42,7 +44,7 @@ class TestNewsletterMailingsService:
             == f"""This is a test of the emergency broadcast system.
 
 ---
-Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
+Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}""".replace(
                 "\n", "\r\n"
             )
         )
@@ -64,6 +66,7 @@ Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
         assert response.status_code == 200
 
         # Assert email was sent
+        subscriber = listmonk.find_subscriber(email="anon@example.com")
         messages = poll_for_mail(mailhog_client, 3)
         msg = email.message_from_string(
             messages[0]["Raw"]["Data"], policy=email.policy.default
@@ -77,7 +80,7 @@ Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
             == f"""This is a test of the emergency broadcast system.
 
 ---
-Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe""".replace(
+Unsubscribe: {newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}""".replace(
                 "\n", "\r\n"
             )
         )

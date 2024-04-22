@@ -46,7 +46,7 @@ class ListmonkLayer(Layer):
             json={
                 "name": "Default campaign template",
                 "type": "campaign",
-                "body": '{{ template "content" . }}',
+                "body": '{{ template "content" . }}?s={{ .Subscriber.UUID }}',
             },
         )
 
