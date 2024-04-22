@@ -89,10 +89,10 @@ class CreateSubscription(PydanticService):
         confirm_link = (
             f"{self.context.absolute_url()}/{confirm_path}?token={quote(pc.token)}"
         )
-        subject = self.context.confirm_email_subject.format(
-            newsletter=self.context.title
-        )
-        body = self.context.confirm_email_body.format(
+        subject = translate(
+            self.context.confirm_email_subject, context=self.request
+        ).format(newsletter=self.context.title)
+        body = translate(self.context.confirm_email_body, context=self.request).format(
             newsletter=self.context.title, confirm_link=confirm_link
         )
         api.portal.send_email(

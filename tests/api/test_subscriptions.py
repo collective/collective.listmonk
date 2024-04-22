@@ -101,7 +101,8 @@ class TestSubscriptionsService:
             msg.get_content()
             == f"""You are now subscribed to the Test Newsletter\r
 \r
-You can unsubscribe using this link:\r
+---\r
+To unsubscribe, please click on the following link:\r
 {newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}"""
         )
 
