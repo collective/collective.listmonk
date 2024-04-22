@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-04-22 18:07+0000\n"
+"POT-Creation-Date: 2024-04-22 20:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,44 +34,55 @@ msgstr ""
 msgid "Uninstall collective.listmonk"
 msgstr ""
 
-#. Default: "Someone has requested a subscription to ${newsletter}\n\nTo confirm this subscription, click this link:\n${confirm_link}\n\nIf you did not request this subscription, you can ignore this email.\n"
-#: collective/listmonk/services/subscriptions.py:87
-msgid "email_confirm_body"
+#. Default: "Thank you for subscribing to the {newsletter}.\n\nTo confirm your subscription, please click on this link:\n{confirm_link}\n\nIf you have not requested this subscription, you can ignore this e-mail.\n"
+#: collective/listmonk/content/newsletter.py:69
+msgid "default_confirm_email_body"
 msgstr ""
-"Jemand hat ein Abonnement für ${newsletter} angefordert\n"
+"Vielen Dank, dass Sie den {newsletter} bestellt haben.\n"
 "\n"
-"Um dieses Abonnement zu bestätigen, klicken Sie auf diesen Link:\n"
-"${confirm_link}\n"
+"Um diese Bestellung zu bestätigen, klicken Sie bitte auf diesen Link:\n"
+"{confirm_link}\n"
 "\n"
-"Wenn Sie dieses Abonnement nicht angefordert haben, können Sie diese E-Mail ignorieren.\n"
+"Wenn Sie diese Bestellung nicht angefordert haben, können Sie diese E-Mail ignorieren.\n"
 
-#. Default: "Confirm Subscription"
-#: collective/listmonk/services/subscriptions.py:83
-msgid "email_confirm_subject"
-msgstr "Abonnement bestätigen"
+#. Default: "Confirm {newsletter} subscription"
+#: collective/listmonk/content/newsletter.py:61
+msgid "default_confirm_email_subject"
+msgstr "{newsletter} bestätigen"
 
-#. Default: "---\nUnsubscribe: ${unsubscribe_link}"
-#: collective/listmonk/content/newsletter.py:77
+#. Default: "---\nTo unsubscribe, please click on the following link:\n${unsubscribe_link}"
+#: collective/listmonk/content/newsletter.py:100
+#: collective/listmonk/services/subscriptions.py:148
 msgid "email_mailing_footer"
 msgstr ""
 "---\n"
 "Zur Abbestellung dieses Newsletters bitte auf folgenden Link klicken:\n"
 "${unsubscribe_link}"
 
-#. Default: "You are now subscribed to the ${newsletter}\n\nYou can unsubscribe using this link:\n${unsubscribe_link}?s=${sub_uuid}\n"
-#: collective/listmonk/services/subscriptions.py:146
-#, fuzzy
+#. Default: "You are now subscribed to the ${newsletter}"
+#: collective/listmonk/services/subscriptions.py:137
 msgid "email_subscribed_body"
-msgstr ""
-"Sie haben jetzt den ${newsletter} abonniert\n"
-"\n"
-"Zur Abbestellung dieses Newsletters bitte auf folgenden Link klicken:\n"
-"${unsubscribe_link}?s=${sub_uuid}\n"
+msgstr "Sie haben jetzt den ${newsletter} abonniert"
 
 #. Default: "Subscription confirmed"
-#: collective/listmonk/services/subscriptions.py:142
+#: collective/listmonk/services/subscriptions.py:129
 msgid "email_subscribed_subject"
 msgstr "Abonnement bestätigt"
+
+#. Default: "Please select a topic to subscribe to."
+#: collective/listmonk/services/subscriptions.py:44
+msgid "error_no_lists"
+msgstr "Bitte wählen Sie ein Thema das Sie abonnieren möchten."
+
+#. Default: "Confirmation E-mail Body"
+#: collective/listmonk/content/newsletter.py:68
+msgid "label_confirm_email_body"
+msgstr "Bestätigungs-E-Mail-Text"
+
+#. Default: "Confirmation E-mail Subject"
+#: collective/listmonk/content/newsletter.py:60
+msgid "label_confirm_email_subject"
+msgstr "Betreff der Bestätigungs-E-Mail"
 
 #. Default: "E-mail Footer"
 #: collective/listmonk/content/newsletter.py:55
@@ -94,11 +105,11 @@ msgid "label_topics"
 msgstr "Themen"
 
 #. Default: "newsletter-confirm"
-#: collective/listmonk/services/subscriptions.py:77
+#: collective/listmonk/services/subscriptions.py:79
 msgid "path_confirm"
 msgstr "newsletter-bestaetigen"
 
 #. Default: "newsletter-unsubscribe"
-#: collective/listmonk/content/newsletter.py:91
+#: collective/listmonk/content/newsletter.py:114
 msgid "path_unsubscribe"
 msgstr "newsletter-abbestellen"
