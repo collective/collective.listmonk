@@ -9,6 +9,14 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a7 (2024-04-24)
+
+
+### Bug fixes:
+
+- If a subscriber unsubscribes but still has an unconfirmed subscription to another list, don't delete the subscriber. @davisagli #16
+- Fix translation of unsubscribe link. @davisagli #17
+
 ## 1.0.0a6 (2024-04-22)
 
 
