@@ -188,7 +188,7 @@ class Unsubscribe(PydanticService):
         current_lists = [
             list["id"]
             for list in subscriber["lists"]
-            if list["subscription_status"] == "confirmed"
+            if list["subscription_status"] != "unsubscribed"
         ]
         if set(current_lists) - set(list_ids):
             # Some subscriptions will remain.
