@@ -102,7 +102,7 @@ class Newsletter(Container):
                     default="---\nTo unsubscribe, please click on the following link:\n${unsubscribe_link}",
                     mapping={"unsubscribe_link": self.get_unsubscribe_link()},
                 ),
-                request,
+                context=request,
             )
         )
 
