@@ -31,9 +31,9 @@ class TestNewsletterMailingsService:
 
         # Assert email was sent
         subscriber = listmonk.find_subscriber(email="john@example.com")
-        messages = poll_for_mail(mailhog_client, 2)
+        messages = poll_for_mail(mailhog_client, 1)
         msg = email.message_from_string(
-            messages[1]["Raw"]["Data"], policy=email.policy.default
+            messages[0]["Raw"]["Data"], policy=email.policy.default
         )
         assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'
         assert msg["To"] == "john@example.com"
@@ -68,7 +68,7 @@ To unsubscribe, please click on the following link:
 
         # Assert email was sent
         subscriber = listmonk.find_subscriber(email="anon@example.com")
-        messages = poll_for_mail(mailhog_client, 3)
+        messages = poll_for_mail(mailhog_client, 2)
         msg = email.message_from_string(
             messages[0]["Raw"]["Data"], policy=email.policy.default
         )

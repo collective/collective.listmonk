@@ -13,8 +13,8 @@ class ListmonkSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="listmonk_")
 
     url: str = "http://localhost:9000/api"
-    username: str = "admin"
-    password: str = "admin"
+    username: str = "api"
+    password: str = "password"
 
 
 settings = ListmonkSettings()
