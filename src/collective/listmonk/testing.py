@@ -27,15 +27,13 @@ class ListmonkLayer(Layer):
         # Configure SMTP server; disable unsubscribe headers
         settings = listmonk.call_listmonk("get", "/settings")["data"]
         smtp = settings["smtp"][0]
-        smtp.update(
-            {
-                "enabled": True,
-                "host": "mailhog",
-                "port": 1025,
-                "auth_protocol": "none",
-                "tls_type": "none",
-            }
-        )
+        smtp.update({
+            "enabled": True,
+            "host": "mailhog",
+            "port": 1025,
+            "auth_protocol": "none",
+            "tls_type": "none",
+        })
         settings.update({"smtp": [smtp], "privacy.unsubscribe_header": False})
         listmonk.call_listmonk("put", "/settings", json=settings)
 

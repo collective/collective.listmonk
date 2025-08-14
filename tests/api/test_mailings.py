@@ -45,7 +45,7 @@ class TestNewsletterMailingsService:
 
 ---
 To unsubscribe, please click on the following link:
-{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}""".replace(
+{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber["uuid"]}""".replace(
                 "\n", "\r\n"
             )
         )
@@ -82,7 +82,7 @@ To unsubscribe, please click on the following link:
 
 ---
 To unsubscribe, please click on the following link:
-{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}""".replace(
+{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber["uuid"]}""".replace(
                 "\n", "\r\n"
             )
         )

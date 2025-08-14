@@ -103,7 +103,7 @@ class TestSubscriptionsService:
 \r
 ---\r
 To unsubscribe, please click on the following link:\r
-{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber['uuid']}"""
+{newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber["uuid"]}"""
         )
 
     def test_create_subscription__bad_request(self, url, anon_plone_client):

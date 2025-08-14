@@ -26,12 +26,10 @@ class PydanticService(Service):
 
     def _error(self, exc: pydantic.ValidationError):
         return BadRequest(
-            json.dumps(
-                [
-                    {"message": error["msg"], "field": error["loc"][-1]}
-                    for error in exc.errors()
-                ]
-            )
+            json.dumps([
+                {"message": error["msg"], "field": error["loc"][-1]}
+                for error in exc.errors()
+            ])
         )
 
 

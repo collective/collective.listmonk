@@ -66,16 +66,14 @@ class SendMailing(PydanticService):
             # Store mailing in Plone
             # (do this first so we only send the email once if there's a conflict error)
             record = Record()
-            record.attrs.update(
-                {
-                    "subject": data.subject,
-                    "newsletter": self.context.UID(),
-                    "topics": topics,
-                    "sent_at": datetime.now(),
-                    "sent_by": api.user.get_current().getUserId(),
-                    "based_on": based_on.UID() if based_on else None,
-                }
-            )
+            record.attrs.update({
+                "subject": data.subject,
+                "newsletter": self.context.UID(),
+                "topics": topics,
+                "sent_at": datetime.now(),
+                "sent_by": api.user.get_current().getUserId(),
+                "based_on": based_on.UID() if based_on else None,
+            })
             portal = api.portal.get()
             get_soup(MAILINGS_SOUP, portal).add(record)
             transaction.commit()

@@ -17,26 +17,24 @@ class INewsletter(Schema):
 
     topics = JSONField(
         title=_("label_topics", "Topics"),
-        schema=json.dumps(
-            {
-                "type": "array",
-                "items": {
-                    "title": "Topic",
-                    "type": "object",
-                    "fieldsets": [
-                        {
-                            "id": "default",
-                            "title": "Default",
-                            "fields": ["title", "list_id"],
-                        },
-                    ],
-                    "properties": {
-                        "title": {"title": "Topic", "type": "string"},
-                        "list_id": {"title": "List ID", "type": "string"},
+        schema=json.dumps({
+            "type": "array",
+            "items": {
+                "title": "Topic",
+                "type": "object",
+                "fieldsets": [
+                    {
+                        "id": "default",
+                        "title": "Default",
+                        "fields": ["title", "list_id"],
                     },
+                ],
+                "properties": {
+                    "title": {"title": "Topic", "type": "string"},
+                    "list_id": {"title": "List ID", "type": "string"},
                 },
-            }
-        ),
+            },
+        }),
         default=[],
         widget="json_list",
     )
