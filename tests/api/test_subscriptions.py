@@ -44,9 +44,9 @@ class TestSubscriptionsService:
 
         # Assert unconfirmed subscription was created in listmonk
         subscriber = listmonk.find_subscriber(email="subscriber@example.com")
-        subscription = next([
+        subscription = next(
             lst for lst in subscriber["lists"] if lst["id"] == self.list_id
-        ])
+        )
         assert subscription["subscription_status"] == "unconfirmed"
 
     def test_create_subscription_again(
@@ -79,9 +79,9 @@ class TestSubscriptionsService:
 
         # Confirm status was updated in listmonk
         subscriber = listmonk.find_subscriber(email="subscriber@example.com")
-        subscription = next([
+        subscription = next(
             lst for lst in subscriber["lists"] if lst["id"] == self.list_id
-        ])
+        )
         assert subscription["subscription_status"] == "confirmed"
 
         # Confirm email was sent to confirm subscription
