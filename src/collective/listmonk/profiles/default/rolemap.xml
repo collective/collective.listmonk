@@ -17,5 +17,6 @@
       <role name="Owner" />
       <role name="Editor" />
     </permission>
+    <!-- -*- extra stuff goes here -*- -->
   </permissions>
 </rolemap>

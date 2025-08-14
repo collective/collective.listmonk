@@ -9,7 +9,7 @@ class TestSetupUninstall:
         installer.uninstall_product(PACKAGE_NAME)
 
     def test_addon_uninstalled(self, installer):
-        """Test if add-on is uninstalled."""
+        """Test if collective.listmonk is uninstalled."""
         assert installer.is_product_installed(PACKAGE_NAME) is False
 
     def test_browserlayer_not_registered(self, browser_layers):

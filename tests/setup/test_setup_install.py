@@ -5,7 +5,7 @@ import requests
 
 class TestSetupInstall:
     def test_addon_installed(self, installer):
-        """Test if add-on is installed."""
+        """Test if collective.listmonk is installed."""
         assert installer.is_product_installed(PACKAGE_NAME) is True
 
     def test_browserlayer(self, browser_layers):

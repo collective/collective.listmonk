@@ -15,29 +15,29 @@ GREEN=`tput setaf 2`
 RESET=`tput sgr0`
 YELLOW=`tput setaf 3`
 
-PLONE6=6.1-latest
-
 # Python checks
-PYTHON?=python3
+UV?=uv
 
 # installed?
-ifeq (, $(shell which $(PYTHON) ))
-  $(error "PYTHON=$(PYTHON) not found in $(PATH)")
-endif
-
-# version ok?
-PYTHON_VERSION_MIN=3.11
-PYTHON_VERSION_OK=$(shell $(PYTHON) -c "import sys; print((int(sys.version_info[0]), int(sys.version_info[1])) >= tuple(map(int, '$(PYTHON_VERSION_MIN)'.split('.'))))")
-ifeq ($(PYTHON_VERSION_OK),0)
-  $(error "Need python $(PYTHON_VERSION) >= $(PYTHON_VERSION_MIN)")
+ifeq (, $(shell which $(UV) ))
+  $(error "UV=$(UV) not found in $(PATH)")
 endif
 
 BACKEND_FOLDER=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+
+ifdef PLONE_VERSION
+PLONE_VERSION := $(PLONE_VERSION)
+else
+PLONE_VERSION := 6.1.2
+endif
+
 VENV_FOLDER=$(BACKEND_FOLDER)/.venv
+export VIRTUAL_ENV=$(VENV_FOLDER)
 BIN_FOLDER=$(VENV_FOLDER)/bin
 
-GIT_FOLDER=$(BACKEND_FOLDER)/.git
-
+# Environment variables to be exported
+export PYTHONWARNINGS := ignore
+export DOCKER_BUILDKIT := 1
 
 all: build
 
@@ -47,71 +47,93 @@ all: build
 help: ## This help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-$(BIN_FOLDER)/pip $(BIN_FOLDER)/tox $(BIN_FOLDER)/mxdev:
-	@echo "$(GREEN)==> Setup Virtual Env$(RESET)"
-	uv venv --seed $(VENV_FOLDER)
-	$(BIN_FOLDER)/pip install -c constraints.txt -U "pip" "wheel" "cookiecutter" "mxdev" "tox" "pre-commit"
-	if [ -d $(GIT_FOLDER) ]; then $(BIN_FOLDER)/pre-commit install; else echo "$(RED) Not installing pre-commit$(RESET)";fi
+requirements-mxdev.txt: pyproject.toml mx.ini ## Generate constraints file
+	@echo "$(GREEN)==> Generate constraints file$(RESET)"
+	@echo '-c https://dist.plone.org/release/$(PLONE_VERSION)/constraints.txt' > requirements.txt
+	@uvx mxdev -c mx.ini
+
+$(VENV_FOLDER): requirements-mxdev.txt ## Install dependencies
+	@echo "$(GREEN)==> Install environment$(RESET)"
+	@uv venv --python=3.12 $(VENV_FOLDER)
+	@uv pip install -r requirements-mxdev.txt
+
+.PHONY: sync
+sync: $(VENV_FOLDER) ## Sync project dependencies
+	@echo "$(GREEN)==> Sync project dependencies$(RESET)"
+	@uv pip install -r requirements-mxdev.txt
+
+instance/etc/zope.ini instance/etc/zope.conf: instance.yaml ## Create instance configuration
+	@echo "$(GREEN)==> Create instance configuration$(RESET)"
+	@uvx cookiecutter -f --no-input -c 2.1.1 --config-file instance.yaml gh:plone/cookiecutter-zope-instance
 
 .PHONY: config
-config: $(BIN_FOLDER)/pip  ## Create instance configuration
-	@echo "$(GREEN)==> Create instance configuration$(RESET)"
-	$(BIN_FOLDER)/cookiecutter -f --no-input --config-file instance.yaml gh:plone/cookiecutter-zope-instance
-
-.PHONY: build-dev
-build-dev: config ## pip install Plone packages
-	@echo "$(GREEN)==> Setup Build$(RESET)"
-	$(BIN_FOLDER)/mxdev -c mx.ini
-	$(BIN_FOLDER)/pip install -r requirements-mxdev.txt
+config: instance/etc/zope.ini
 
 .PHONY: install
-install: build-dev ## Install Plone
-
-
-.PHONY: build
-build: build-dev ## Install Plone
+install: $(VENV_FOLDER) config ## Install Plone and dependencies
 
 
 .PHONY: clean
-clean: ## Remove old virtualenv and creates a new one
+clean: ## Clean installation and instance (data left intact)
 	@echo "$(RED)==> Cleaning environment and build$(RESET)"
-	rm -rf bin lib lib64 include share etc var inituser pyvenv.cfg .installed.cfg instance .tox .pytest_cache
+	@rm -rf $(VENV_FOLDER) pyvenv.cfg .installed.cfg instance/etc .venv .pytest_cache .ruff_cache constraints* requirements*
+
+.PHONY: remove-data
+remove-data: ## Remove all content
+	@echo "$(RED)==> Removing all content$(RESET)"
+	rm -rf $(VENV_FOLDER) instance/var
 
 .PHONY: start
-start: ## Start a Plone instance on localhost:8080
-	PYTHONWARNINGS=ignore $(BIN_FOLDER)/runwsgi instance/etc/zope.ini
+start: $(VENV_FOLDER) instance/etc/zope.ini ## Start a Plone instance on localhost:8080
+	@$(BIN_FOLDER)/runwsgi instance/etc/zope.ini
 
 .PHONY: console
-console: ## Start a zope console
-	PYTHONWARNINGS=ignore $(BIN_FOLDER)/zconsole debug instance/etc/zope.conf
+console: $(VENV_FOLDER) instance/etc/zope.ini ## Start a console into a Plone instance
+	@$(BIN_FOLDER)/zconsole debug instance/etc/zope.conf
+
+.PHONY: create-site
+create-site: $(VENV_FOLDER) instance/etc/zope.ini ## Create a new site from scratch
+	@$(BIN_FOLDER)/zconsole run instance/etc/zope.conf ./scripts/create_site.py
+
+# QA
+.PHONY: lint
+lint: ## Check and fix code base according to Plone standards
+	@echo "$(GREEN)==> Lint codebase$(RESET)"
+	@uvx ruff@latest check --fix --config $(BACKEND_FOLDER)/pyproject.toml
+	@uvx pyroma@latest -d .
+	@uvx check-python-versions@latest .
+	@uvx zpretty@latest --check src
 
 .PHONY: format
-format: $(BIN_FOLDER)/tox ## Format the codebase according to our standards
+format: ## Check and fix code base according to Plone standards
 	@echo "$(GREEN)==> Format codebase$(RESET)"
-	$(BIN_FOLDER)/tox -e format
+	@uvx ruff@latest check --select I --fix --config $(BACKEND_FOLDER)/pyproject.toml
+	@uvx ruff@latest format --config $(BACKEND_FOLDER)/pyproject.toml
+	@uvx zpretty@latest -i src
 
-.PHONY: lint
-lint: ## check code style
-	$(BIN_FOLDER)/tox -e lint
+.PHONY: check
+check: format lint ## Check and fix code base according to Plone standards
 
 # i18n
-$(BIN_FOLDER)/i18ndude: $(BIN_FOLDER)/pip
-	@echo "$(GREEN)==> Install translation tools$(RESET)"
-	$(BIN_FOLDER)/pip install i18ndude
-
 .PHONY: i18n
-i18n: $(BIN_FOLDER)/i18ndude ## Update locales
+i18n: $(VENV_FOLDER) ## Update locales
 	@echo "$(GREEN)==> Updating locales$(RESET)"
-	$(BIN_FOLDER)/update_locale
+	@$(BIN_FOLDER)/python -m collective.listmonk.locales
 
 # Tests
 .PHONY: test
-test: $(BIN_FOLDER)/tox ## run tests
-	$(BIN_FOLDER)/tox -e test
+test: $(VENV_FOLDER) ## run tests
+	@$(BIN_FOLDER)/pytest
 
 .PHONY: test-coverage
-test-coverage: $(BIN_FOLDER)/tox ## run tests with coverage
-	$(BIN_FOLDER)/tox -e coverage
+test-coverage: $(VENV_FOLDER) ## run tests with coverage
+	@$(BIN_FOLDER)/pytest --cov=collective.listmonk --cov-report term-missing
+
+.PHONY: release
+release: $(VENV_FOLDER) ## Create a release
+	@echo "$(GREEN)==> Create a release$(RESET)"
+	@uv pip install -e ".[release]"
+	@uv run fullrelease
 
 .PHONY: start-listmonk
 start-listmonk:
