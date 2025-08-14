@@ -18,8 +18,8 @@ class ListmonkLayer(Layer):
     """Runs listmonk in a container"""
 
     def setUp(self):
-        self.proc = subprocess.call(
-            "docker compose -p listmonk_test -f docker-compose.yml up --wait",
+        self.proc = subprocess.call(  # noqa: S602
+            "docker compose -p listmonk_test -f docker-compose.yml up --wait",  # noqa: S607
             shell=True,
             close_fds=True,
         )
@@ -49,8 +49,8 @@ class ListmonkLayer(Layer):
         )
 
     def tearDown(self):
-        subprocess.call(
-            "docker compose -p listmonk_test -f docker-compose.yml down",
+        subprocess.call(  # noqa: S602
+            "docker compose -p listmonk_test -f docker-compose.yml down",  # noqa: S607
             shell=True,
             close_fds=True,
         )

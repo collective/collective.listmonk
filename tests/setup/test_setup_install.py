@@ -19,7 +19,7 @@ class TestSetupInstall:
         assert profile_last_version(f"{PACKAGE_NAME}:default") == "1000"
 
     def test_listmonk_version(self, functional):
-        response = requests.get(
+        response = requests.get(  # noqa: S113
             "http://localhost:9000/api/config", auth=("api", "password")
         )
         assert response.status_code == 200

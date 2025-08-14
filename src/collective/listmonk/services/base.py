@@ -16,13 +16,13 @@ class PydanticService(Service):
         try:
             return model.model_validate(self.request.form)
         except pydantic.ValidationError as exc:
-            raise self._error(exc)
+            raise self._error(exc) from exc
 
     def validate_body(self, model: type[T]) -> T:
         try:
             return model.model_validate_json(self.request.get("BODY"))
         except pydantic.ValidationError as exc:
-            raise self._error(exc)
+            raise self._error(exc) from exc
 
     def _error(self, exc: pydantic.ValidationError):
         return BadRequest(

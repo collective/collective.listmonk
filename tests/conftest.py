@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from collective.listmonk.testing import FUNCTIONAL_TESTING
 from collective.listmonk.testing import INTEGRATION_TESTING
 from pathlib import Path
@@ -8,7 +9,6 @@ from plone.restapi.testing import RelativeSession
 from pytest_plone import fixtures_factory
 from pythongettext.msgfmt import Msgfmt
 from pythongettext.msgfmt import PoSyntaxError
-from typing import Generator
 
 import pytest
 import time

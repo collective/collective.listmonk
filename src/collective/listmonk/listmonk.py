@@ -1,8 +1,5 @@
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
-from requests.exceptions import ConnectionError
-from requests.exceptions import HTTPError
-from typing import Optional
 from zExceptions import BadRequest
 
 import requests
@@ -14,7 +11,7 @@ class ListmonkSettings(BaseSettings):
 
     url: str = "http://localhost:9000/api"
     username: str = "api"
-    password: str = "password"
+    password: str = "password"  # noqa: S105
 
 
 settings = ListmonkSettings()
@@ -25,19 +22,19 @@ def call_listmonk(method, path, **kw):
     url = settings.url.rstrip("/") + "/" + path.lstrip("/")
     try:
         response = func(url, auth=(settings.username, settings.password), **kw)
-    except ConnectionError:
+    except requests.exceptions.ConnectionError:
         time.sleep(2)
         response = func(url, auth=(settings.username, settings.password), **kw)
     try:
         response.raise_for_status()
-    except HTTPError as err:
+    except requests.exceptions.HTTPError as err:
         if err.response.status_code == 400:
-            raise err.__class__(err.response.json()["message"])
+            raise err.__class__(err.response.json()["message"]) from None
         raise
     return response.json()
 
 
-def find_subscriber(**filters: str) -> Optional[dict]:
+def find_subscriber(**filters: str) -> dict | None:
     query = " AND ".join(f"{k}='{v}'" for k, v in filters.items())
     result = call_listmonk(
         "get",

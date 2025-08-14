@@ -97,7 +97,8 @@ class Newsletter(Container):
             translate(
                 _(
                     "email_mailing_footer",
-                    default="---\nTo unsubscribe, please click on the following link:\n${unsubscribe_link}",
+                    default="---\nTo unsubscribe, please click on the following "
+                    "link:\n${unsubscribe_link}",
                     mapping={"unsubscribe_link": self.get_unsubscribe_link()},
                 ),
                 context=request,
