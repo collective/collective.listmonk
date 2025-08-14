@@ -1,4 +1,4 @@
-collective.listmonk Copyright 2024, kitconcept Gmbh
+collective.listmonk Copyright 2025, kitconcept GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 2

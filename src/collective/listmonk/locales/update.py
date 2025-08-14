@@ -1,4 +1,5 @@
 """Update locales."""
+
 from pathlib import Path
 
 import logging
@@ -47,7 +48,7 @@ def locale_folder_setup(domain: str):
                 f"--input={locale_path}/{domain}.pot "
                 f"--output={locale_path}/{lang}/LC_MESSAGES/{domain}.po"
             )
-            subprocess.call(
+            subprocess.call(  # noqa: S602
                 cmd,
                 shell=True,
             )
@@ -59,7 +60,7 @@ def _rebuild(domain: str):
         f"--exclude {excludes} "
         f"--create {domain} {target_path}"
     )
-    subprocess.call(
+    subprocess.call(  # noqa: S602
         cmd,
         shell=True,
     )
@@ -76,7 +77,7 @@ def _sync(domain: str):
         f"{i18ndude} sync --pot {locale_path}/{domain}.pot "
         f"{locale_path}/*/LC_MESSAGES/{domain}.po"
     )
-    subprocess.call(
+    subprocess.call(  # noqa: S602
         cmd,
         shell=True,
     )

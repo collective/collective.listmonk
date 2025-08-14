@@ -15,7 +15,6 @@
 
 [![PyPI - Plone Versions](https://img.shields.io/pypi/frameworkversions/plone/collective.listmonk)](https://pypi.org/project/collective.listmonk/)
 
-[![Meta](https://github.com/collective/collective.listmonk/actions/workflows/meta.yml/badge.svg)](https://github.com/collective/collective.listmonk/actions/workflows/meta.yml)
 ![Code Style](https://img.shields.io/badge/Code%20Style-Black-000000)
 
 [![GitHub contributors](https://img.shields.io/github/contributors/collective/collective.listmonk)](https://github.com/collective/collective.listmonk)
@@ -116,24 +115,6 @@ Run all tests with:
 
 ```bash
 make test
-```
-
-Run all tests but stop on the first error and open a `pdb` session:
-
-```bash
-./bin/tox -e test -- -x --pdb
-```
-
-Run only tests that match `TestVocabAuthors`:
-
-```bash
-./bin/tox -e test -- -k TestVocabAuthors
-```
-
-Run only tests that match `TestVocabAuthors`, but stop on the first error and open a `pdb` session:
-
-```bash
-./bin/tox -e test -- -k TestVocabAuthors -x --pdb
 ```
 
 ## Credits

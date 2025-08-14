@@ -115,7 +115,7 @@ class ConfirmSubscription(PydanticService):
         try:
             pc = PendingConfirmation.model_validate(storage[data.token])
         except KeyError:
-            raise BadRequest("Invalid token.")
+            raise BadRequest("Invalid token.") from None
         listmonk.call_listmonk(
             "put",
             "/subscribers/lists",
@@ -155,7 +155,8 @@ class ConfirmSubscription(PydanticService):
             + translate(
                 _(
                     "email_mailing_footer",
-                    default="---\nTo unsubscribe, please click on the following link:\n${unsubscribe_link}",
+                    default="---\nTo unsubscribe, please click on the following "
+                    "link:\n${unsubscribe_link}",
                     mapping={"unsubscribe_link": unsubscribe_link},
                 ),
                 context=self.request,
@@ -186,9 +187,9 @@ class Unsubscribe(PydanticService):
         if subscriber is None:
             raise BadRequest("Subscription not found")
         current_lists = [
-            list["id"]
-            for list in subscriber["lists"]
-            if list["subscription_status"] != "unsubscribed"
+            mlist["id"]
+            for mlist in subscriber["lists"]
+            if mlist["subscription_status"] != "unsubscribed"
         ]
         if set(current_lists) - set(list_ids):
             # Some subscriptions will remain.

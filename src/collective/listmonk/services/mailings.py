@@ -18,7 +18,6 @@ from souper.soup import get_soup
 from souper.soup import NodeAttributeIndexer
 from souper.soup import Record
 from typing import Annotated
-from typing import Optional
 from zExceptions import BadRequest
 from zope.interface import implementer
 from ZTUtils.Lazy import LazyMap
@@ -34,8 +33,8 @@ class MailingRequest(pydantic.BaseModel):
     subject: Annotated[str, Len(min_length=1)]
     body: str
     list_ids: list[int]
-    based_on: Optional[str]
-    send_test_to: Optional[list[str]] = None
+    based_on: str | None
+    send_test_to: list[str] | None = None
 
 
 class SendMailing(PydanticService):
@@ -66,16 +65,14 @@ class SendMailing(PydanticService):
             # Store mailing in Plone
             # (do this first so we only send the email once if there's a conflict error)
             record = Record()
-            record.attrs.update(
-                {
-                    "subject": data.subject,
-                    "newsletter": self.context.UID(),
-                    "topics": topics,
-                    "sent_at": datetime.now(),
-                    "sent_by": api.user.get_current().getUserId(),
-                    "based_on": based_on.UID() if based_on else None,
-                }
-            )
+            record.attrs.update({
+                "subject": data.subject,
+                "newsletter": self.context.UID(),
+                "topics": topics,
+                "sent_at": datetime.now(),
+                "sent_by": api.user.get_current().getUserId(),
+                "based_on": based_on.UID() if based_on else None,
+            })
             portal = api.portal.get()
             get_soup(MAILINGS_SOUP, portal).add(record)
             transaction.commit()
@@ -120,8 +117,8 @@ class SendMailing(PydanticService):
 
 
 class MailingsQuery(pydantic.BaseModel):
-    based_on: Optional[str] = None
-    newsletter: Optional[str] = None
+    based_on: str | None = None
+    newsletter: str | None = None
 
 
 class ListMailings(PydanticService):

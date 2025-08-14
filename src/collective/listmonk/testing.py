@@ -18,8 +18,8 @@ class ListmonkLayer(Layer):
     """Runs listmonk in a container"""
 
     def setUp(self):
-        self.proc = subprocess.call(
-            "docker compose -p listmonk_test -f docker-compose.yml up --wait",
+        self.proc = subprocess.call(  # noqa: S602
+            "docker compose -p listmonk_test -f docker-compose.yml up --wait",  # noqa: S607
             shell=True,
             close_fds=True,
         )
@@ -27,15 +27,13 @@ class ListmonkLayer(Layer):
         # Configure SMTP server; disable unsubscribe headers
         settings = listmonk.call_listmonk("get", "/settings")["data"]
         smtp = settings["smtp"][0]
-        smtp.update(
-            {
-                "enabled": True,
-                "host": "mailhog",
-                "port": 1025,
-                "auth_protocol": "none",
-                "tls_type": "none",
-            }
-        )
+        smtp.update({
+            "enabled": True,
+            "host": "mailhog",
+            "port": 1025,
+            "auth_protocol": "none",
+            "tls_type": "none",
+        })
         settings.update({"smtp": [smtp], "privacy.unsubscribe_header": False})
         listmonk.call_listmonk("put", "/settings", json=settings)
 
@@ -51,8 +49,8 @@ class ListmonkLayer(Layer):
         )
 
     def tearDown(self):
-        subprocess.call(
-            "docker compose -p listmonk_test -f docker-compose.yml down",
+        subprocess.call(  # noqa: S602
+            "docker compose -p listmonk_test -f docker-compose.yml down",  # noqa: S607
             shell=True,
             close_fds=True,
         )

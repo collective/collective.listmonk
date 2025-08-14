@@ -1,17 +1,45 @@
 version: "3"
 services:
+  listmonk_install:
+    image: listmonk/listmonk:v5.0.3
+    command: sh -c "./listmonk --install --yes"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      LISTMONK_ADMIN_USER: admin
+      LISTMONK_ADMIN_PASSWORD: password
+      LISTMONK_ADMIN_API_USER: api
+      LISTMONK_db__host: postgres
+      LISTMONK_db__port: 5432
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: listmonk
+      LISTMONK_db__database: listmonk
+
+  # Set the API user password after listmonk is installed but before it starts
+  listmonk_postinstall:
+    image: postgres:16
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: listmonk
+    depends_on:
+      listmonk_install:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    entrypoint: ["psql", "-U", "listmonk", "-c", "UPDATE users SET password='password' WHERE username='api'"]
+
   listmonk:
-    image: listmonk/listmonk:latest
-    command: sh -c "./listmonk --install --yes && ./listmonk"
+    image: listmonk/listmonk:v5.0.3
     ports:
       - "9000:9000"
     depends_on:
       postgres:
         condition: service_healthy
+      listmonk_postinstall:
+        condition: service_completed_successfully
     environment:
       LISTMONK_app__address: 0.0.0.0:9000
-      LISTMONK_app__admin_username: admin
-      LISTMONK_app__admin_password: admin
       LISTMONK_db__host: postgres
       LISTMONK_db__port: 5432
       LISTMONK_db__user: listmonk

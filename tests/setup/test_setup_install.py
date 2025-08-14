@@ -5,7 +5,7 @@ import requests
 
 class TestSetupInstall:
     def test_addon_installed(self, installer):
-        """Test if add-on is installed."""
+        """Test if collective.listmonk is installed."""
         assert installer.is_product_installed(PACKAGE_NAME) is True
 
     def test_browserlayer(self, browser_layers):
@@ -19,8 +19,8 @@ class TestSetupInstall:
         assert profile_last_version(f"{PACKAGE_NAME}:default") == "1000"
 
     def test_listmonk_version(self, functional):
-        response = requests.get(
-            "http://localhost:9000/api/config", auth=("admin", "admin")
+        response = requests.get(  # noqa: S113
+            "http://localhost:9000/api/config", auth=("api", "password")
         )
         assert response.status_code == 200
-        assert response.json()["data"]["version"] == "v3.0.0"
+        assert response.json()["data"]["version"] == "v5.0.3"
