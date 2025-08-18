@@ -9,6 +9,18 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0 (2025-08-18)
+
+
+### New features:
+
+- Test with Listmonk 5. @davisagli 
+
+
+### Internal:
+
+- Update CI configuration. @davisagli 
+
 ## 1.0.0a7 (2024-04-24)
 
 
