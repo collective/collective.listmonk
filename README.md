@@ -109,7 +109,7 @@ make format
 
 ### Run tests
 
-Testing of this package is done with [`pytest`](https://docs.pytest.org/) and [`tox`](https://tox.wiki/).
+Testing of this package is done with [`pytest`](https://docs.pytest.org/).
 
 Run all tests with:
 
