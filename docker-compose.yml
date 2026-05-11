@@ -1,7 +1,7 @@
 version: "3"
 services:
   listmonk_install:
-    image: listmonk/listmonk:v5.1.0
+    image: listmonk/listmonk:v6.1.0
     command: sh -c "./listmonk --install --yes"
     depends_on:
       postgres:
@@ -37,7 +37,7 @@ services:
       ]
 
   listmonk:
-    image: listmonk/listmonk:v5.1.0
+    image: listmonk/listmonk:v6.1.0
     ports:
       - "9000:9000"
     depends_on:

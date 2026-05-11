@@ -54,7 +54,7 @@ requirements-mxdev.txt: pyproject.toml mx.ini ## Generate constraints file
 
 $(VENV_FOLDER): requirements-mxdev.txt ## Install dependencies
 	@echo "$(GREEN)==> Install environment$(RESET)"
-	@uv venv $(VENV_FOLDER)
+	@uv venv --clear $(VENV_FOLDER)
 	@uv pip install -r requirements-mxdev.txt
 
 .PHONY: sync

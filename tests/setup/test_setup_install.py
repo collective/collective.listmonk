@@ -23,4 +23,4 @@ class TestSetupInstall:
             "http://localhost:9000/api/config", auth=("api", "password")
         )
         assert response.status_code == 200
-        assert response.json()["data"]["version"] == "v5.1.0"
+        assert response.json()["data"]["version"] == "v6.1.0"
