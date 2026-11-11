@@ -35,6 +35,7 @@ class TestSubscriptionsService:
         # Assert confirmation email was sent
         resp = mailhog_client.get("/messages")
         messages = resp.json()
+        print(messages)
         assert len(messages) == 1
         msg = email.message_from_string(
             messages[0]["Raw"]["Data"], policy=email.policy.default
@@ -97,14 +98,11 @@ class TestSubscriptionsService:
         assert msg["To"] == "subscriber@example.com"
         assert msg["Subject"] == "Subscription confirmed"
         assert msg["Content-Type"] == 'text/plain; charset="utf-8"'
-        assert (
-            msg.get_content()
-            == f"""You are now subscribed to the Test Newsletter\r
+        assert msg.get_content() == f"""You are now subscribed to the Test Newsletter\r
 \r
 ---\r
 To unsubscribe, please click on the following link:\r
 {newsletter.absolute_url()}/newsletter-unsubscribe?s={subscriber["uuid"]}"""
-        )
 
     def test_create_subscription__bad_request(self, url, anon_plone_client):
         response = anon_plone_client.post(
