@@ -37,12 +37,14 @@
 Add `collective.listmonk` as a dependency in your package's `setup.py`
 
 ```python
-    install_requires = [
+install_requires = (
+    [
         "collective.listmonk",
         "Plone",
         "plone.restapi",
         "setuptools",
     ],
+)
 ```
 
 Also, add `collective.listmonk` to your package's `configure.zcml` (or `dependencies.zcml`):

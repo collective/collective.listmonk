@@ -1,4 +1,4 @@
-from ..conftest import poll_for_mail
+from ..conftest import confirm_email_sent
 from collective.listmonk import listmonk
 from urllib.parse import unquote
 
@@ -22,22 +22,21 @@ class TestSubscriptionsService:
         return f"{newsletter.absolute_url()}/@subscriptions"
 
     def test_create_subscription(self, url, anon_plone_client, mailhog_client):
-        response = anon_plone_client.post(
-            url,
-            json={
-                "name": "Jean-Luc Picard",
-                "email": "subscriber@example.com",
-                "list_ids": [self.list_id],
-            },
-        )
+        with confirm_email_sent(mailhog_client) as sent:
+            response = anon_plone_client.post(
+                url,
+                json={
+                    "name": "Jean-Luc Picard",
+                    "email": "subscriber@example.com",
+                    "list_ids": [self.list_id],
+                },
+            )
         assert response.status_code == 200
 
         # Assert confirmation email was sent
-        resp = mailhog_client.get("/messages")
-        messages = resp.json()
-        assert len(messages) == 1
+        assert len(sent["messages"]) == 1
         msg = email.message_from_string(
-            messages[0]["Raw"]["Data"], policy=email.policy.default
+            sent["messages"][0]["Raw"]["Data"], policy=email.policy.default
         )
         assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'
         assert msg["To"] == "subscriber@example.com"
@@ -53,28 +52,28 @@ class TestSubscriptionsService:
         self, newsletter, url, anon_plone_client, mailhog_client
     ):
         # Trying to create it a second time re-sends the confirmation.
-        response = anon_plone_client.post(
-            url,
-            json={
-                "name": "Jean-Luc Picard",
-                "email": "subscriber@example.com",
-                "list_ids": [self.list_id],
-            },
-        )
+        with confirm_email_sent(mailhog_client) as sent:
+            response = anon_plone_client.post(
+                url,
+                json={
+                    "name": "Jean-Luc Picard",
+                    "email": "subscriber@example.com",
+                    "list_ids": [self.list_id],
+                },
+            )
         assert response.status_code == 200
 
         # Assert confirmation email was sent
-        resp = mailhog_client.get("/messages")
-        messages = resp.json()
-        assert len(messages) == 2
+        assert len(sent["messages"]) == 1
         msg = email.message_from_string(
-            messages[0]["Raw"]["Data"], policy=email.policy.default
+            sent["messages"][0]["Raw"]["Data"], policy=email.policy.default
         )
         body = msg.get_content()
         token = unquote(re.search(r"token=(\S+)", body).group(1))
 
         # Confirm the subscription
-        response = anon_plone_client.put(url, json={"token": token})
+        with confirm_email_sent(mailhog_client) as sent:
+            response = anon_plone_client.put(url, json={"token": token})
         assert response.status_code == 200
 
         # Confirm status was updated in listmonk
@@ -85,12 +84,9 @@ class TestSubscriptionsService:
         assert subscription["subscription_status"] == "confirmed"
 
         # Confirm email was sent to confirm subscription
-        poll_for_mail(mailhog_client, 3)
-        resp = mailhog_client.get("/messages")
-        messages = resp.json()
-        assert len(messages) == 3
+        assert len(sent["messages"]) == 1
         msg = email.message_from_string(
-            messages[0]["Raw"]["Data"], policy=email.policy.default
+            sent["messages"][0]["Raw"]["Data"], policy=email.policy.default
         )
         body = msg.get_content()
         assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'

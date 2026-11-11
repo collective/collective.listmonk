@@ -10,6 +10,7 @@ from pytest_plone import fixtures_factory
 from pythongettext.msgfmt import Msgfmt
 from pythongettext.msgfmt import PoSyntaxError
 
+import contextlib
 import pytest
 import time
 import transaction
@@ -99,13 +100,21 @@ def mailhog_client():
     return RelativeSession("http://localhost:8025/api/v1")
 
 
-def poll_for_mail(mailhog_client, expected=1, retries=15):
-    messages = mailhog_client.get("/messages").json()
-    orig_retries = retries
+@contextlib.contextmanager
+def confirm_email_sent(mailhog_client, expected=1):
+    start_count = len(mailhog_client.get("/messages").json())
+    result = {}
+    yield result
+    retries = 15
     while retries > 0:
         messages = mailhog_client.get("/messages").json()
-        if len(messages) == expected:
-            return messages
+        if len(messages) == start_count + expected:
+            result["messages"] = list(reversed(messages[:expected]))
+            return
+        elif len(messages) > start_count + expected:
+            raise Exception(
+                f"Expected {expected} emails to be sent, but got {len(messages) - start_count}"
+            )
         retries -= 1
         time.sleep(1)
-    raise Exception(f"Timed out waiting for mail after {orig_retries}s")
+    raise Exception("Timed out waiting for mail after 15 retries")
