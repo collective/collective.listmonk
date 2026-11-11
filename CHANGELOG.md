@@ -9,6 +9,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.3 (2026-11-10)
+
+
+### Bug fixes:
+
+- Test with Listmonk 6.2.0. @davisagli 
+
 ## 1.0.2 (2026-05-11)
 
 
