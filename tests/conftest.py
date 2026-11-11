@@ -117,4 +117,4 @@ def confirm_email_sent(mailhog_client, expected=1):
             )
         retries -= 1
         time.sleep(1)
-    raise Exception(f"Timed out waiting for mail after 15 retries")
+    raise Exception("Timed out waiting for mail after 15 retries")
