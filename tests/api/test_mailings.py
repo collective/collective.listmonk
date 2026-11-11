@@ -1,4 +1,4 @@
-from ..conftest import poll_for_mail
+from ..conftest import confirm_email_sent
 from collective.listmonk import listmonk
 
 import email
@@ -27,13 +27,11 @@ class TestNewsletterMailingsService:
     def test_send_mailing(
         self, portal, newsletter, manager_plone_client, mailhog_client
     ):
-        self._send_mailing(portal, newsletter, manager_plone_client)
-
-        # Assert email was sent
+        with confirm_email_sent(mailhog_client) as sent:
+            self._send_mailing(portal, newsletter, manager_plone_client)
         subscriber = listmonk.find_subscriber(email="john@example.com")
-        messages = poll_for_mail(mailhog_client, 1)
         msg = email.message_from_string(
-            messages[0]["Raw"]["Data"], policy=email.policy.default
+            sent["messages"][0]["Raw"]["Data"], policy=email.policy.default
         )
         assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'
         assert msg["To"] == "john@example.com"
@@ -54,23 +52,23 @@ To unsubscribe, please click on the following link:
     def test_send_mailing_test(
         self, portal, newsletter, manager_plone_client, mailhog_client
     ):
-        response = manager_plone_client.post(
-            f"{newsletter.absolute_url()}/@mailings",
-            json={
-                "subject": "Test mailing",
-                "body": """This is a test of the emergency broadcast system.""",
-                "based_on": portal.absolute_url(),
-                "list_ids": [self.list_id],
-                "send_test_to": ["anon@example.com"],
-            },
-        )
+        with confirm_email_sent(mailhog_client) as sent:
+            response = manager_plone_client.post(
+                f"{newsletter.absolute_url()}/@mailings",
+                json={
+                    "subject": "Test mailing",
+                    "body": """This is a test of the emergency broadcast system.""",
+                    "based_on": portal.absolute_url(),
+                    "list_ids": [self.list_id],
+                    "send_test_to": ["anon@example.com"],
+                },
+            )
         assert response.status_code == 200
 
         # Assert email was sent
         subscriber = listmonk.find_subscriber(email="anon@example.com")
-        messages = poll_for_mail(mailhog_client, 2)
         msg = email.message_from_string(
-            messages[0]["Raw"]["Data"], policy=email.policy.default
+            sent["messages"][0]["Raw"]["Data"], policy=email.policy.default
         )
         assert msg["From"] == '"collective.listmonk tests" <testplone@example.com>'
         assert msg["To"] == "anon@example.com"
