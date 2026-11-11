@@ -3,6 +3,7 @@ services:
   listmonk_install:
     image: listmonk/listmonk:v6.2.0
     command: sh -c "./listmonk --install --yes"
+    restart: "no"
     depends_on:
       postgres:
         condition: service_healthy
@@ -33,8 +34,9 @@ services:
         "-U",
         "listmonk",
         "-c",
-        "UPDATE users SET password='password' WHERE username='api'",
+        "UPDATE users SET password=ENCODE(DIGEST('password', 'sha256'), 'hex') WHERE username='api'",
       ]
+    restart: "no"
 
   listmonk:
     image: listmonk/listmonk:v6.2.0
